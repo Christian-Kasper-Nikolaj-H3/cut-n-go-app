@@ -1,5 +1,5 @@
 import {KeyboardAvoidingView, Platform, StyleSheet, View} from "react-native";
-import {Text, TextInput, Button, HelperText} from 'react-native-paper';
+import {Text, TextInput, Button, HelperText, Divider} from 'react-native-paper';
 import {useState} from "react";
 import {registerUser} from "@/services/api";
 import {useAuth} from "@/context/AuthContext";
@@ -48,70 +48,76 @@ export default function RegisterScreen() {
         >
             <View style={styles.card}>
                 <View style={styles.header}>
-                    <Text variant="headlineMedium" style={styles.title}>Opret konto</Text>
-                    <Text variant="bodyMedium" style={styles.subtitle}>Udfyld dine oplysninger nedenfor</Text>
+                    <Text variant="headlineMedium" style={styles.title}>Create Account</Text>
+                    <Text variant="bodyMedium" style={styles.subtitle}>Join us today</Text>
                 </View>
 
                 <View style={styles.form}>
-                    <TextInput
-                        label="Brugernavn"
-                        value={username}
-                        onChangeText={setUsername}
-                        mode="outlined"
-                        autoCapitalize="none"
-                        left={<TextInput.Icon icon="account"/>}
-                    />
+                    {/* 2 kolonner */}
+                    <View style={styles.row}>
 
-                    <TextInput
-                        label="Fornavn"
-                        value={name}
-                        onChangeText={setName}
-                        mode="outlined"
-                        autoCapitalize="none"
-                        left={<TextInput.Icon icon="account"/>}
-                    />
+                        <TextInput
+                            label="Username"
+                            value={username}
+                            onChangeText={setUsername}
+                            mode="outlined"
+                            autoCapitalize="none"
+                            style={styles.flex}
+                        />
+                        <TextInput
+                            label="Email"
+                            value={email}
+                            onChangeText={setEmail}
+                            mode="outlined"
+                            autoCapitalize="none"
+                            style={styles.flex}
+                        />
+                    </View>
 
-                    <TextInput
-                        label="Efternavn"
-                        value={surname}
-                        onChangeText={setSurname}
-                        mode="outlined"
-                        autoCapitalize="none"
-                        left={<TextInput.Icon icon="account"/>}
-                    />
+                    {/* 2 kolonner */}
+                    <View style={styles.row}>
+                        <TextInput
+                            label="First name"
+                            value={name}
+                            onChangeText={setName}
+                            mode="outlined"
+                            autoCapitalize="none"
+                            style={styles.flex}
+                        />
+                        <TextInput
+                            label="Last name"
+                            value={surname}
+                            onChangeText={setSurname}
+                            mode="outlined"
+                            autoCapitalize="none"
+                            style={styles.flex}
+                        />
+                    </View>
 
-                    <TextInput
-                        label="Adgangskode"
-                        value={password}
-                        onChangeText={setPassword}
-                        mode="outlined"
-                        secureTextEntry={!showPassword}
-                        left={<TextInput.Icon icon="lock"/>}
-                        right={
-                            <TextInput.Icon
-                                icon={showPassword ? 'eye-off' : 'eye'}
-                                onPress={() => setShowPassword(!showPassword)}
-                            />
-                        }
-                    />
-
-                    <TextInput
-                        label="Telefon"
-                        value={phone}
-                        onChangeText={setPhone}
-                        mode="outlined"
-                        autoCapitalize="none"
-                        left={<TextInput.Icon icon="account"/>}
-                    />
-
-                    <TextInput
-                        label="Email"
-                        value={email}
-                        onChangeText={setEmail}
-                        mode="outlined"
-                        autoCapitalize="none"
-                        left={<TextInput.Icon icon="account"/>}
-                    />
+                    <View style={styles.row}>
+                        <TextInput
+                            label="Password"
+                            value={password}
+                            onChangeText={setPassword}
+                            mode="outlined"
+                            secureTextEntry={!showPassword}
+                            right={
+                                <TextInput.Icon
+                                    icon={showPassword ? 'eye-off' : 'eye'}
+                                    onPress={() => setShowPassword(!showPassword)}
+                                />
+                            }
+                            style={styles.flex}
+                        />
+                        <TextInput
+                            label="Phone"
+                            value={phone}
+                            onChangeText={setPhone}
+                            mode="outlined"
+                            keyboardType="phone-pad"
+                            style={styles.flex}
+                        />
+                    </View>
 
                     {error ? <HelperText type="error" visible>{error}</HelperText> : null}
 
@@ -123,13 +129,24 @@ export default function RegisterScreen() {
                         style={styles.button}
                         contentStyle={styles.buttonContent}
                     >
-                        Register
+                        REGISTER
                     </Button>
 
+                    <Divider
+                        style={{
+                            marginVertical: 16,
+                            backgroundColor: '#be185d',
+                            height: 2,
+                            opacity: 0.1,
+                        }}
+                    />
+
                     <Button mode="text" onPress={handleMoveToLogin}>
-                        Allerede har du en konto? Log ind her
+                        <Text>Already have an account? </Text>
+                        <Text style={{ color: '#be185d' }}>Sign in here</Text>
                     </Button>
                 </View>
+
             </View>
         </KeyboardAvoidingView>
     );
@@ -156,10 +173,12 @@ const styles = StyleSheet.create({
     },
     header: {
         padding: 24,
-        gap: 4
+        gap: 4,
+        alignItems: 'center',
     },
     title: {
-        fontWeight: '700'
+        fontWeight: '700',
+        color: '#be185d'
     },
     subtitle: {
         opacity: 0.5
@@ -173,6 +192,14 @@ const styles = StyleSheet.create({
         marginTop: 4
     },
     buttonContent: {
-        paddingVertical: 6
+        paddingVertical: 6,
+        backgroundColor: '#be185d',
     },
+    row: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    flex: {
+        flex: 1
+    }
 });
