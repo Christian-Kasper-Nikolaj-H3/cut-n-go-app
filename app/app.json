@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "cut-n-go-app",
-    "slug": "cut-n-go-app",
+    "name": "app",
+    "slug": "app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "cutngoapp",
+    "scheme": "app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
