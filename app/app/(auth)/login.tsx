@@ -90,7 +90,7 @@ export default function LoginScreen() {
                             style={styles.button}
                             contentStyle={styles.buttonContent}
                         >
-                            Log ind
+                            SIGN IN
                         </Button>
 
                         <Divider
