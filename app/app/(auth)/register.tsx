@@ -1,5 +1,6 @@
 import {KeyboardAvoidingView, Platform, StyleSheet, View} from "react-native";
 import {Text, TextInput, Button, HelperText, Divider} from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 import {useState} from "react";
 import {registerUser} from "@/services/api";
 import {useAuth} from "@/context/AuthContext";
@@ -42,122 +43,130 @@ export default function RegisterScreen() {
     }
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <LinearGradient
+            colors={['#ffeef8', '#fff0f5', '#ffe6f0']}
+            locations={[0, 0.5, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={styles.container}
         >
-            <View style={styles.card}>
-                <View style={styles.header}>
-                    <Text variant="headlineMedium" style={styles.title}>Create Account</Text>
-                    <Text variant="bodyMedium" style={styles.subtitle}>Join us today</Text>
+
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1, justifyContent: 'center', padding: 24 }}
+            >
+                <View style={styles.card}>
+                    <View style={styles.header}>
+                        <Text variant="headlineMedium" style={styles.title}>Create Account</Text>
+                        <Text variant="bodyMedium" style={styles.subtitle}>Join us today</Text>
+                    </View>
+
+                    <View style={styles.form}>
+                        {/* 2 kolonner */}
+                        <View style={styles.row}>
+
+                            <TextInput
+                                label="Username"
+                                value={username}
+                                onChangeText={setUsername}
+                                mode="outlined"
+                                autoCapitalize="none"
+                                style={styles.flex}
+                            />
+                            <TextInput
+                                label="Email"
+                                value={email}
+                                onChangeText={setEmail}
+                                mode="outlined"
+                                autoCapitalize="none"
+                                style={styles.flex}
+                            />
+                        </View>
+
+                        {/* 2 kolonner */}
+                        <View style={styles.row}>
+                            <TextInput
+                                label="First name"
+                                value={name}
+                                onChangeText={setName}
+                                mode="outlined"
+                                autoCapitalize="none"
+                                style={styles.flex}
+                            />
+                            <TextInput
+                                label="Last name"
+                                value={surname}
+                                onChangeText={setSurname}
+                                mode="outlined"
+                                autoCapitalize="none"
+                                style={styles.flex}
+                            />
+                        </View>
+
+                        <View style={styles.row}>
+                            <TextInput
+                                label="Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                mode="outlined"
+                                secureTextEntry={!showPassword}
+                                right={
+                                    <TextInput.Icon
+                                        icon={showPassword ? 'eye-off' : 'eye'}
+                                        onPress={() => setShowPassword(!showPassword)}
+                                    />
+                                }
+                                style={styles.flex}
+                            />
+                            <TextInput
+                                label="Phone"
+                                value={phone}
+                                onChangeText={setPhone}
+                                mode="outlined"
+                                keyboardType="phone-pad"
+                                style={styles.flex}
+                            />
+                        </View>
+
+                        {error ? <HelperText type="error" visible>{error}</HelperText> : null}
+
+                        <Button
+                            mode="contained"
+                            onPress={handleRegister}
+                            loading={loading}
+                            disabled={loading}
+                            style={styles.button}
+                            contentStyle={styles.buttonContent}
+                        >
+                            REGISTER
+                        </Button>
+
+                        <Divider
+                            style={{
+                                marginVertical: 16,
+                                backgroundColor: '#be185d',
+                                height: 2,
+                                opacity: 0.1,
+                            }}
+                        />
+
+                        <Button mode="text" onPress={handleMoveToLogin}>
+                            <Text>Already have an account? </Text>
+                            <Text style={{ color: '#be185d' }}>Sign in here</Text>
+                        </Button>
+                    </View>
+
                 </View>
+            </KeyboardAvoidingView>
 
-                <View style={styles.form}>
-                    {/* 2 kolonner */}
-                    <View style={styles.row}>
-
-                        <TextInput
-                            label="Username"
-                            value={username}
-                            onChangeText={setUsername}
-                            mode="outlined"
-                            autoCapitalize="none"
-                            style={styles.flex}
-                        />
-                        <TextInput
-                            label="Email"
-                            value={email}
-                            onChangeText={setEmail}
-                            mode="outlined"
-                            autoCapitalize="none"
-                            style={styles.flex}
-                        />
-                    </View>
-
-                    {/* 2 kolonner */}
-                    <View style={styles.row}>
-                        <TextInput
-                            label="First name"
-                            value={name}
-                            onChangeText={setName}
-                            mode="outlined"
-                            autoCapitalize="none"
-                            style={styles.flex}
-                        />
-                        <TextInput
-                            label="Last name"
-                            value={surname}
-                            onChangeText={setSurname}
-                            mode="outlined"
-                            autoCapitalize="none"
-                            style={styles.flex}
-                        />
-                    </View>
-
-                    <View style={styles.row}>
-                        <TextInput
-                            label="Password"
-                            value={password}
-                            onChangeText={setPassword}
-                            mode="outlined"
-                            secureTextEntry={!showPassword}
-                            right={
-                                <TextInput.Icon
-                                    icon={showPassword ? 'eye-off' : 'eye'}
-                                    onPress={() => setShowPassword(!showPassword)}
-                                />
-                            }
-                            style={styles.flex}
-                        />
-                        <TextInput
-                            label="Phone"
-                            value={phone}
-                            onChangeText={setPhone}
-                            mode="outlined"
-                            keyboardType="phone-pad"
-                            style={styles.flex}
-                        />
-                    </View>
-
-                    {error ? <HelperText type="error" visible>{error}</HelperText> : null}
-
-                    <Button
-                        mode="contained"
-                        onPress={handleRegister}
-                        loading={loading}
-                        disabled={loading}
-                        style={styles.button}
-                        contentStyle={styles.buttonContent}
-                    >
-                        REGISTER
-                    </Button>
-
-                    <Divider
-                        style={{
-                            marginVertical: 16,
-                            backgroundColor: '#be185d',
-                            height: 2,
-                            opacity: 0.1,
-                        }}
-                    />
-
-                    <Button mode="text" onPress={handleMoveToLogin}>
-                        <Text>Already have an account? </Text>
-                        <Text style={{ color: '#be185d' }}>Sign in here</Text>
-                    </Button>
-                </View>
-
-            </View>
-        </KeyboardAvoidingView>
+        </LinearGradient>
     );
 }
 
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 24
+        flex: 1
     },
     card: {
         backgroundColor: 'white',
