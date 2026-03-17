@@ -7,6 +7,7 @@ interface RequestOptions<TPayload> {
     method: HttpMethod;
     path: string;
     payload?: TPayload;
+    headers?: Record<string, string>;
 }
 
 export async function requestJson<TResponse, TPayload = undefined>({ method, path, payload }: RequestOptions<TPayload>): Promise<TResponse> {

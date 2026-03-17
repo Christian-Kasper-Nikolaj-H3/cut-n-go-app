@@ -20,6 +20,7 @@ import {
 } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { createBooking, getAvailableBookingTimes } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 
 type MessageState = {
     type: 'success' | 'error';
@@ -36,6 +37,7 @@ type BookingScreenProps = {
 };
 
 export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
+    const { user } = useAuth();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
@@ -49,6 +51,17 @@ export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
     const [isLoadingTimes, setIsLoadingTimes] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<MessageState>(null);
+
+    useEffect(() => {
+        if (!isLoggedIn || !user) {
+            return;
+        }
+
+        setFirstName((current) => current || user.name || '');
+        setLastName((current) => current || user.surname || '');
+        setPhone((current) => current || user.phone || '');
+        setEmail((current) => current || user.email || '');
+    }, [isLoggedIn, user]);
 
     const formattedApiDate = useMemo(() => {
         return selectedDate.toLocaleDateString('sv-SE');
@@ -147,10 +160,10 @@ export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
     }
 
     function resetForm() {
-        setFirstName('');
-        setLastName('');
-        setPhone('');
-        setEmail('');
+        setFirstName(isLoggedIn && user ? user.name || '' : '');
+        setLastName(isLoggedIn && user ? user.surname || '' : '');
+        setPhone(isLoggedIn && user ? user.phone || '' : '');
+        setEmail(isLoggedIn && user ? user.email || '' : '');
         setSelectedSalon('');
         setSelectedDate(new Date());
         setHasPickedDate(false);
@@ -225,9 +238,7 @@ export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
                                 Book tid
                             </Text>
                             <Text variant="bodyMedium" style={styles.subtitle}>
-                                {isLoggedIn
-                                    ? 'Book din næste tid som logget ind bruger'
-                                    : 'Vælg salon, dato og tidspunkt for din behandling'}
+                                Vælg salon, dato og tidspunkt for din behandling
                             </Text>
                         </View>
 
