@@ -7,9 +7,10 @@ export default function RootLayout() {
         <PaperProvider>
             <AuthProvider>
                 <Stack initialRouteName="(public)" screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(auth)" />
                     <Stack.Screen name="(public)" />
                     <Stack.Screen name="(private)" />
+                    <Stack.Screen name="(auth)/login" />
+                    <Stack.Screen name="(auth)/register" />
                 </Stack>
             </AuthProvider>
         </PaperProvider>
