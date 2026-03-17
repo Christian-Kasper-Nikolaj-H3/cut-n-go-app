@@ -24,23 +24,31 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: '#ffd33d',
+                tabBarActiveTintColor: '#be185d',
+                tabBarInactiveTintColor: '#9ca3af',
                 headerStyle: {
-                    backgroundColor: '#25292e',
+                    backgroundColor: '#fffafc',
                 },
                 headerShadowVisible: false,
-                headerTintColor: '#fff',
-                tabBarStyle: {
-                    backgroundColor: '#25292e',
+                headerTintColor: '#9d174d',
+                headerTitleStyle: {
+                    fontWeight: '700',
                 },
-                headerRight: () =>
-                    isLoggingOut ? (
-                        <ActivityIndicator style={{ marginRight: 16 }} />
-                    ) : (
-                        <Pressable onPress={handleLogout} style={{ marginRight: 16 }}>
-                            <Ionicons name="log-out-outline" size={22} color="#fff" />
-                        </Pressable>
-                    ),
+                tabBarStyle: {
+                    backgroundColor: '#ffffff',
+                    borderTopColor: '#f5c2d7',
+                    borderTopWidth: 1,
+                    height: 64,
+                    paddingTop: 6,
+                    paddingBottom: 8,
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '600',
+                },
+                sceneStyle: {
+                    backgroundColor: 'transparent',
+                },
             }}
         >
 
@@ -65,6 +73,20 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? 'calendar' : 'calendar-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
+
+            <Tabs.Screen
+                name="logout"
+                options={{
+                    title: 'Logout',
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'log-out' : 'log-out-outline'}
                             color={color}
                             size={24}
                         />
