@@ -38,8 +38,7 @@ export function PublicBottomNav({ activeTab }: PublicBottomNavProps) {
             style={[
                 styles.container,
                 {
-                    paddingBottom: Math.max(insets.bottom, 8),
-                    height: 56 + Math.max(insets.bottom, 8),
+                    paddingBottom: Math.max(insets.bottom, 12),
                 },
             ]}
         >
@@ -75,15 +74,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         borderTopColor: '#f5c2d7',
         borderTopWidth: 1,
-        height: 64,
         paddingTop: 6,
-        paddingBottom: 8,
+        minHeight: 64,
     },
     item: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         gap: 2,
+        paddingVertical: 4,
     },
     label: {
         fontSize: 12,
