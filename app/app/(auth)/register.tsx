@@ -183,10 +183,6 @@ export default function RegisterScreen() {
                             <Text>Already have an account? </Text>
                             <Text style={{color: '#be185d'}}>Sign in here</Text>
                         </Button>
-
-                        <Button mode="text" onPress={handleContinueToBooking}>
-                            Continue to booking without login
-                        </Button>
                     </View>
                 </View>
             </KeyboardAvoidingView>

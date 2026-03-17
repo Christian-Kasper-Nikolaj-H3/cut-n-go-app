@@ -1,78 +1,54 @@
-import { Tabs } from 'expo-router';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Drawer } from 'expo-router/drawer';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuth } from '@/context/AuthContext';
 
 export default function PublicLayout() {
-    return (
-        <Tabs
-            screenOptions={{
-                tabBarActiveTintColor: '#be185d',
-                tabBarInactiveTintColor: '#9ca3af',
-                headerStyle: {
-                    backgroundColor: '#fffafc',
-                },
-                headerShadowVisible: false,
-                headerTintColor: '#9d174d',
-                headerTitleStyle: {
-                    fontWeight: '700',
-                },
-                tabBarStyle: {
-                    backgroundColor: '#ffffff',
-                    borderTopColor: '#f5c2d7',
-                    borderTopWidth: 1,
-                    height: 64,
-                    paddingTop: 6,
-                    paddingBottom: 8,
-                },
-                tabBarLabelStyle: {
-                    fontSize: 12,
-                    fontWeight: '600',
-                },
-                sceneStyle: {
-                    backgroundColor: 'transparent',
-                },
-            }}
-        >
-            <Tabs.Screen
-                name="index"
-                options={{
-                    title: 'Home',
-                    tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'home-sharp' : 'home-outline'}
-                            color={color}
-                            size={24}
-                        />
-                    ),
-                }}
-            />
+    const { token, isLoading } = useAuth();
 
-            <Tabs.Screen
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator />
+            </View>
+        );
+    }
+
+    return (
+        <Drawer>
+            <Drawer.Screen
                 name="booking"
                 options={{
                     title: 'Booking',
-                    tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'calendar' : 'calendar-outline'}
-                            color={color}
-                            size={24}
-                        />
-                    ),
+                    drawerLabel: 'Booking'
                 }}
             />
 
-            <Tabs.Screen
+            <Drawer.Screen
                 name="login"
                 options={{
                     title: 'Login',
-                    tabBarIcon: ({ color, focused }) => (
-                        <Ionicons
-                            name={focused ? 'log-in' : 'log-in-outline'}
-                            color={color}
-                            size={24}
-                        />
-                    ),
+                    drawerLabel: 'Login',
+                    drawerItemStyle: { display: token ? 'none' : 'flex' }
                 }}
             />
-        </Tabs>
+
+            <Drawer.Screen
+                name="register"
+                options={{
+                    title: 'Register',
+                    drawerLabel: 'Register',
+                    drawerItemStyle: { display: token ? 'none' : 'flex' }
+                }}
+            />
+
+            <Drawer.Screen
+                name="logout"
+                options={{
+                    title: 'Logout',
+                    drawerLabel: 'Logout',
+                    drawerItemStyle: { display: token ? 'flex' : 'none' }
+                }}
+            />
+        </Drawer>
     );
 }

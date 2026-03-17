@@ -5,7 +5,6 @@ import {router} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useAuth} from '@/context/AuthContext';
 import {ApiError, AppConfigError} from '@/api/auth';
-import { PublicBottomNav } from '@/components/navigation/PublicBottomNav';
 
 function getLoginErrorMessage(error: unknown): string {
     if (error instanceof AppConfigError) {
@@ -142,8 +141,6 @@ export default function LoginScreen() {
                     </View>
                 </KeyboardAvoidingView>
             </LinearGradient>
-
-            <PublicBottomNav activeTab="login" />
         </View>
     );
 }
