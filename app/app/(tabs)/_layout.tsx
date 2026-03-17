@@ -24,19 +24,43 @@ export default function TabLayout() {
                 options={{
                     title: 'Home',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                        <Ionicons
+                            name={focused ? 'home-sharp' : 'home-outline'}
+                            color={color}
+                            size={24}
+                        />
                     ),
                 }}
             />
+
             <Tabs.Screen
-                name={"register"}
+                name="booking"
                 options={{
-                    title: "Register",
+                    title: 'Booking',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'person-add' : 'person-add-outline'} color={color} size={24} />
-                    )
+                        <Ionicons
+                            name={focused ? 'calendar' : 'calendar-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
                 }}
             />
+
+            <Tabs.Screen
+                name="login"
+                options={{
+                    title: 'Login',
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'log-in' : 'log-in-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
+
         </Tabs>
     );
 }

@@ -27,13 +27,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const login = async (newToken: string) => {
         await saveToken(newToken);
         setToken(newToken);
-        router.replace('/(tabs)');
+        router.replace('/(tabs)/index');
     };
 
     const logout = async () => {
         await removeToken();
         setToken(null);
-        router.replace('/(auth)/login');
+        router.replace('/(tabs)/login');
     };
 
     return (
