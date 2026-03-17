@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const login = async (newToken: string) => {
         await saveToken(newToken);
         setToken(newToken);
-        router.replace('/(tabs)/index');
+        router.replace('/(tabs)');
     };
 
     const logout = async () => {
