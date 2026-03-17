@@ -1,6 +1,6 @@
-import {postJson} from '@/api/client';
+import {postJson} from '@/api/core/client';
 
-export {ApiError, AppConfigError} from '@/api/errors';
+export {ApiError, AppConfigError} from '@/api/core/errors';
 
 export interface LoginPayload {
     username: string;
