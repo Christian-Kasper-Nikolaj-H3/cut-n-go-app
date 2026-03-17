@@ -24,7 +24,8 @@ export default function TabLayout() {
                     fontWeight: '600',
                 },
                 sceneStyle: {
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#f5c2d7',
+                    paddingTop: insets.top,
                 },
             }}
         >
@@ -56,6 +57,21 @@ export default function TabLayout() {
                     ),
                 }}
             />
+
+            <Tabs.Screen
+                name="dashboard"
+                options={{
+                    title: 'Dashboard',
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'calendar' : 'calendar-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
+
 
             <Tabs.Screen
                 name="logout"

@@ -1,8 +1,22 @@
 import { Stack } from 'expo-router';
-import { PaperProvider } from 'react-native-paper';
+import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+
+const appTheme = {
+    ...MD3LightTheme,
+    colors: {
+        ...MD3LightTheme.colors,
+        primary: '#be185d',
+        background: '#fffafc',
+        surface: '#ffffff',
+        surfaceVariant: '#fde7f3',
+        outline: '#f5c2d7',
+        onSurface: '#18181b',
+        onSurfaceVariant: '#71717a',
+    },
+};
 
 function RootNavigator() {
     const { token, isLoading } = useAuth();
@@ -31,7 +45,7 @@ function RootNavigator() {
 export default function RootLayout() {
     return (
         <SafeAreaProvider>
-            <PaperProvider>
+            <PaperProvider theme={appTheme}>
                 <AuthProvider>
                     <RootNavigator />
                 </AuthProvider>

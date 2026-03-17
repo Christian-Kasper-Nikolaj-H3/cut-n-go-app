@@ -23,8 +23,9 @@ export default function PublicLayout() {
                     fontWeight: '600',
                 },
                 sceneStyle: {
-                    backgroundColor: 'transparent',
-                },
+                    backgroundColor: '#f5c2d7',
+                    paddingTop: insets.top,
+                }
             }}
         >
             <Tabs.Screen
