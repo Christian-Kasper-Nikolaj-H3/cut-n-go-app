@@ -6,21 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 
 
 export default function TabLayout() {
-    const { logout } = useAuth();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-    async function handleLogout() {
-        if (isLoggingOut) {
-            return;
-        }
-        setIsLoggingOut(true);
-        try {
-            await logout();
-        } finally {
-            setIsLoggingOut(false);
-        }
-    }
-
     return (
         <Tabs
             screenOptions={{
