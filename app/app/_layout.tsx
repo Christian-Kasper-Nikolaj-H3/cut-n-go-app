@@ -9,7 +9,7 @@ export default function RootLayout() {
                 <Stack initialRouteName="(public)" screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="(auth)" />
                     <Stack.Screen name="(public)" />
-                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="(private)" />
                 </Stack>
             </AuthProvider>
         </PaperProvider>

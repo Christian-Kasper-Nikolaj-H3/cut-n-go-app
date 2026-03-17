@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function NotFoundScreen() {
   const { token } = useAuth();
-  const destination: '/(tabs)' | '/(auth)/login' = token ? '/(tabs)' : '/(auth)/login';
+  const destination: '/(private)' | '/(auth)/login' = token ? '/(private)' : '/(auth)/login';
 
   return (
     <View style={styles.container}>

@@ -14,7 +14,7 @@ export default function AuthLayout() {
   }
 
   if (token) {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(private)" />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;
