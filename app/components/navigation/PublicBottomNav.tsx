@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type PublicBottomNavProps = {
     activeTab: 'home' | 'booking' | 'login';
@@ -30,8 +31,18 @@ function NavItem({ label, icon, isActive, onPress }: NavItemProps) {
 }
 
 export function PublicBottomNav({ activeTab }: PublicBottomNavProps) {
+    const insets = useSafeAreaInsets();
+
     return (
-        <View style={styles.container}>
+        <View
+            style={[
+                styles.container,
+                {
+                    paddingBottom: Math.max(insets.bottom, 8),
+                    height: 56 + Math.max(insets.bottom, 8),
+                },
+            ]}
+        >
             <NavItem
                 label="Home"
                 icon={activeTab === 'home' ? 'home-sharp' : 'home-outline'}
@@ -50,7 +61,7 @@ export function PublicBottomNav({ activeTab }: PublicBottomNavProps) {
                 label="Login"
                 icon={activeTab === 'login' ? 'log-in' : 'log-in-outline'}
                 isActive={activeTab === 'login'}
-                onPress={() => router.replace('/(auth)/login')}
+                onPress={() => router.replace('/(public)/login')}
             />
         </View>
     );

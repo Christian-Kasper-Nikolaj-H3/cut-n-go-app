@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
 import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 function RootNavigator() {
@@ -29,10 +30,12 @@ function RootNavigator() {
 
 export default function RootLayout() {
     return (
-        <PaperProvider>
-            <AuthProvider>
-                <RootNavigator />
-            </AuthProvider>
-        </PaperProvider>
+        <SafeAreaProvider>
+            <PaperProvider>
+                <AuthProvider>
+                    <RootNavigator />
+                </AuthProvider>
+            </PaperProvider>
+        </SafeAreaProvider>
     );
 }
