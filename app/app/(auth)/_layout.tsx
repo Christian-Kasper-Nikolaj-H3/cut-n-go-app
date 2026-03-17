@@ -1,21 +1,21 @@
-import { Redirect, Stack } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
-import { useAuth } from '@/context/AuthContext';
+import {Redirect, Stack} from 'expo-router';
+import {ActivityIndicator, View} from 'react-native';
+import {useAuth} from '@/context/AuthContext';
 
 export default function AuthLayout() {
-  const { token, isLoading } = useAuth();
+    const {token, isLoading} = useAuth();
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
+    if (isLoading) {
+        return (
+            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                <ActivityIndicator/>
+            </View>
+        );
+    }
 
-  if (token) {
-    return <Redirect href="/(private)" />;
-  }
+    if (token) {
+        return <Redirect href="/(private)"/>;
+    }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+    return <Stack screenOptions={{headerShown: false}}/>;
 }
