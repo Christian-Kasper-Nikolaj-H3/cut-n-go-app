@@ -1,16 +1,37 @@
 import { Stack } from 'expo-router';
 import { PaperProvider } from 'react-native-paper';
-import { AuthProvider } from '@/context/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+
+function RootNavigator() {
+    const { token, isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator />
+            </View>
+        );
+    }
+
+    return (
+        <Stack initialRouteName="(public)" screenOptions={{ headerShown: false }}>
+            <Stack.Protected guard={!token}>
+                <Stack.Screen name="(auth)" />
+            </Stack.Protected>
+            <Stack.Screen name="(public)" />
+            <Stack.Protected guard={!!token}>
+                <Stack.Screen name="(private)" />
+            </Stack.Protected>
+        </Stack>
+    );
+}
 
 export default function RootLayout() {
     return (
         <PaperProvider>
             <AuthProvider>
-                <Stack initialRouteName="(public)" screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(auth)" />
-                    <Stack.Screen name="(public)" />
-                    <Stack.Screen name="(private)" />
-                </Stack>
+                <RootNavigator />
             </AuthProvider>
         </PaperProvider>
     );

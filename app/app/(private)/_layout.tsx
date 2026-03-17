@@ -1,4 +1,4 @@
-import { Redirect, Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable } from 'react-native';
 import { useState } from 'react';
@@ -6,16 +6,8 @@ import { useAuth } from '@/context/AuthContext';
 
 
 export default function TabLayout() {
-    const { logout, token, isLoading } = useAuth();
+    const { logout } = useAuth();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-    if (isLoading) {
-        return <ActivityIndicator style={{ marginTop: 32 }} />;
-    }
-
-    if (!token) {
-        return <Redirect href="/(auth)/login" />;
-    }
 
     async function handleLogout() {
         if (isLoggingOut) {
