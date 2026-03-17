@@ -24,16 +24,9 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
+                headerShown: false,
                 tabBarActiveTintColor: '#be185d',
                 tabBarInactiveTintColor: '#9ca3af',
-                headerStyle: {
-                    backgroundColor: '#fffafc',
-                },
-                headerShadowVisible: false,
-                headerTintColor: '#9d174d',
-                headerTitleStyle: {
-                    fontWeight: '700',
-                },
                 tabBarStyle: {
                     backgroundColor: '#ffffff',
                     borderTopColor: '#f5c2d7',
