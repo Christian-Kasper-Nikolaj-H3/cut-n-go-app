@@ -31,7 +31,11 @@ const salonOptions = [
     { label: 'Salon 2', value: '2' },
 ];
 
-export default function Booking() {
+type BookingScreenProps = {
+    isLoggedIn: boolean;
+};
+
+export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
@@ -109,7 +113,7 @@ export default function Booking() {
             }
         }
 
-        loadAvailableTimes();
+        void loadAvailableTimes();
     }, [selectedSalon, hasPickedDate, formattedApiDate]);
 
     function clearMessage() {
@@ -221,7 +225,9 @@ export default function Booking() {
                                 Book tid
                             </Text>
                             <Text variant="bodyMedium" style={styles.subtitle}>
-                                Vælg salon, dato og tidspunkt for din behandling
+                                {isLoggedIn
+                                    ? 'Book din næste tid som logget ind bruger'
+                                    : 'Vælg salon, dato og tidspunkt for din behandling'}
                             </Text>
                         </View>
 
