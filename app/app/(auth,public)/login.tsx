@@ -61,10 +61,6 @@ export default function LoginScreen() {
         router.push('/(auth)/register');
     }
 
-    function handleContinueToBooking() {
-        router.push('/(public)/booking');
-    }
-
     return (
         <View style={styles.screen}>
             <LinearGradient

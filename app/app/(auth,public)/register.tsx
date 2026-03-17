@@ -67,10 +67,6 @@ export default function RegisterScreen() {
         router.push('/(auth)/login');
     }
 
-    function handleContinueToBooking() {
-        router.push('/(public)/booking');
-    }
-
     return (
         <LinearGradient
             colors={['#ffeef8', '#fff0f5', '#ffe6f0']}
