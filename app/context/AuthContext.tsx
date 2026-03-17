@@ -1,50 +1,70 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { getToken, saveToken, removeToken } from '@/services/auth';
-import { router } from 'expo-router';
+import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import type {PropsWithChildren} from 'react';
+import * as SecureStore from 'expo-secure-store';
+import {loginRequest, registerRequest, type LoginPayload, type RegisterPayload} from '@/api/auth';
 
-interface AuthContextType {
+const TOKEN_KEY = 'auth_token';
+
+interface AuthContextValue {
     token: string | null;
     isLoading: boolean;
-    login: (token: string) => Promise<void>;
+    login: (payload: LoginPayload) => Promise<void>;
+    register: (payload: RegisterPayload) => Promise<void>;
     logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({children}: PropsWithChildren) {
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        async function loadToken() {
-            const stored = await getToken();
-            setToken(stored);
+        async function restoreToken() {
+            const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
+            setToken(storedToken);
             setIsLoading(false);
         }
-        loadToken();
+
+        void restoreToken();
     }, []);
 
-    const login = async (newToken: string) => {
-        await saveToken(newToken);
-        setToken(newToken);
-        router.replace('/(tabs)');
-    };
+    const login = useCallback(async (payload: LoginPayload) => {
+        const response = await loginRequest(payload);
+        await SecureStore.setItemAsync(TOKEN_KEY, response.token);
+        setToken(response.token);
+    }, []);
 
-    const logout = async () => {
-        await removeToken();
+    const register = useCallback(async (payload: RegisterPayload) => {
+        const response = await registerRequest(payload);
+        await SecureStore.setItemAsync(TOKEN_KEY, response.token);
+        setToken(response.token);
+    }, []);
+
+    const logout = useCallback(async () => {
+        await SecureStore.deleteItemAsync(TOKEN_KEY);
         setToken(null);
-        router.replace('/(auth)/login');
-    };
+    }, []);
+
+    const value = useMemo(() => ({
+        token,
+        isLoading,
+        login,
+        register,
+        logout,
+    }), [token, isLoading, login, register, logout]);
 
     return (
-        <AuthContext.Provider value={{ token, isLoading, login, logout }}>
-            {children}
+        <AuthContext.Provider value={value}>
+          {children}
         </AuthContext.Provider>
     );
 }
 
 export function useAuth() {
-    const ctx = useContext(AuthContext);
-    if (!ctx) throw new Error('useAuth skal bruges inden i AuthProvider');
-    return ctx;
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within AuthProvider');
+    }
+    return context;
 }
