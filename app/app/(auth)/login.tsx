@@ -5,6 +5,7 @@ import {router} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useAuth} from '@/context/AuthContext';
 import {ApiError, AppConfigError} from '@/api/auth';
+import { PublicBottomNav } from '@/components/navigation/PublicBottomNav';
 
 function getLoginErrorMessage(error: unknown): string {
     if (error instanceof AppConfigError) {
@@ -48,6 +49,8 @@ export default function LoginScreen() {
                 username: username.trim(),
                 password,
             });
+
+            router.replace('/(private)');
         } catch (authError) {
             setError(getLoginErrorMessage(authError));
         } finally {
@@ -64,90 +67,99 @@ export default function LoginScreen() {
     }
 
     return (
-        <LinearGradient
-            colors={['#ffeef8', '#fff0f5', '#ffe6f0']}
-            locations={[0, 0.5, 1]}
-            start={{x: 0, y: 0}}
-            end={{x: 1, y: 1}}
-            style={styles.container}
-        >
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{flex: 1, justifyContent: 'center', padding: 24}}
+        <View style={styles.screen}>
+            <LinearGradient
+                colors={['#ffeef8', '#fff0f5', '#ffe6f0']}
+                locations={[0, 0.5, 1]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.container}
             >
-                <View style={styles.card}>
-                    <View style={styles.header}>
-                        <Text variant="headlineMedium" style={styles.title}>
-                            Welcome back
-                        </Text>
-                        <Text variant="bodyMedium" style={styles.subtitle}>
-                            Sign in to continue
-                        </Text>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.content}
+                >
+                    <View style={styles.card}>
+                        <View style={styles.header}>
+                            <Text variant="headlineMedium" style={styles.title}>
+                                Welcome back
+                            </Text>
+                            <Text variant="bodyMedium" style={styles.subtitle}>
+                                Sign in to continue
+                            </Text>
+                        </View>
+
+                        <View style={styles.form}>
+                            <TextInput
+                                label="Username"
+                                value={username}
+                                onChangeText={setUsername}
+                                mode="outlined"
+                                autoCapitalize="none"
+                            />
+
+                            <TextInput
+                                label="Password"
+                                value={password}
+                                onChangeText={setPassword}
+                                mode="outlined"
+                                secureTextEntry={!showPassword}
+                                right={
+                                    <TextInput.Icon
+                                        icon={showPassword ? 'eye-off' : 'eye'}
+                                        onPress={() => setShowPassword(!showPassword)}
+                                    />
+                                }
+                            />
+
+                            {error ? <HelperText type="error">{error}</HelperText> : null}
+
+                            <Button
+                                mode="contained"
+                                onPress={handleLogin}
+                                loading={loading}
+                                disabled={loading}
+                                style={styles.button}
+                                contentStyle={styles.buttonContent}
+                            >
+                                SIGN IN
+                            </Button>
+
+                            <Divider
+                                style={{
+                                    marginVertical: 16,
+                                    backgroundColor: '#be185d',
+                                    height: 2,
+                                    opacity: 0.1,
+                                }}
+                            />
+
+                            <Button mode="text" onPress={handleMoveToRegister}>
+                                <Text>Don&apos;t have an account? </Text>
+                                <Text style={{ color: '#be185d' }}>Register here</Text>
+                            </Button>
+                        </View>
                     </View>
+                </KeyboardAvoidingView>
+            </LinearGradient>
 
-                    <View style={styles.form}>
-                        <TextInput
-                            label="Username"
-                            value={username}
-                            onChangeText={setUsername}
-                            mode="outlined"
-                            autoCapitalize="none"
-                        />
-
-                        <TextInput
-                            label="Password"
-                            value={password}
-                            onChangeText={setPassword}
-                            mode="outlined"
-                            secureTextEntry={!showPassword}
-                            right={
-                                <TextInput.Icon
-                                    icon={showPassword ? 'eye-off' : 'eye'}
-                                    onPress={() => setShowPassword(!showPassword)}
-                                />
-                            }
-                        />
-
-                        {error ? <HelperText type="error">{error}</HelperText> : null}
-
-                        <Button
-                            mode="contained"
-                            onPress={handleLogin}
-                            loading={loading}
-                            disabled={loading}
-                            style={styles.button}
-                            contentStyle={styles.buttonContent}
-                        >
-                            SIGN IN
-                        </Button>
-
-                        <Divider
-                            style={{
-                                marginVertical: 16,
-                                backgroundColor: '#be185d',
-                                height: 2,
-                                opacity: 0.1,
-                            }}
-                        />
-
-                        <Button mode="text" onPress={handleMoveToRegister}>
-                            <Text>Don&apos;t have an account? </Text>
-                            <Text style={{color: '#be185d'}}>Register here</Text>
-                        </Button>
-
-                        <Button mode="text" onPress={handleContinueToBooking}>
-                            Continue to booking without login
-                        </Button>
-                    </View>
-                </View>
-            </KeyboardAvoidingView>
-        </LinearGradient>
+            <PublicBottomNav activeTab="login" />
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: '#ffffff',
+    },
     container: {
         flex: 1,
+    },
+    content: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 24,
     },
     card: {
         backgroundColor: 'white',
