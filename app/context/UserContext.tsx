@@ -1,12 +1,16 @@
 import {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
 import { useAuth } from "./AuthContext";
-import { getCurrentUser } from "@/api/User";
+import { getCurrentUser, type User } from "@/api/User";
 
-const UserContext = createContext(null);
+type UserContextValue = {
+    user: User | null;
+}
+
+const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export function UserProvider({children} : PropsWithChildren) {
     const { loggedIn } = useAuth();
-    const [ user, setUser ] = useState(null);
+    const [ user, setUser ] = useState<User | null>(null);
 
     useEffect(() => {
         async function fetchUser() {
@@ -15,8 +19,7 @@ export function UserProvider({children} : PropsWithChildren) {
                 return;
             }
 
-            const data = await getCurrentUser();
-            setUser(data);
+            setUser(await getCurrentUser());
         }
 
         void fetchUser();
@@ -29,4 +32,10 @@ export function UserProvider({children} : PropsWithChildren) {
     );
 }
 
-export const useUser = () => useContext(UserContext);
+export const useUser = () => {
+    const context = useContext(UserContext);
+    if(!context) {
+        throw new Error('useUser must be used within UserProvider');
+    }
+    return context;
+}
