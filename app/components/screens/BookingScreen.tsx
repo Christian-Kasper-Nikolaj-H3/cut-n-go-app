@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { CustomDatePicker } from '@/components/CustomDatePicker';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -312,37 +312,16 @@ export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
                                 <Text variant="titleSmall" style={styles.sectionTitle}>
                                     Dato *
                                 </Text>
-                                <Button
-                                    mode="outlined"
-                                    icon="calendar"
-                                    onPress={() => {
-                                        setShowDatePicker(true);
+                                <CustomDatePicker
+                                    value={hasPickedDate ? selectedDate : null}
+                                    onChange={(date) => {
+                                        setSelectedDate(date);
+                                        setHasPickedDate(true);
+                                        setSelectedTime('');
                                         clearMessage();
                                     }}
-                                    style={styles.dateButton}
-                                    contentStyle={styles.dateButtonContent}
-                                    labelStyle={styles.dateButtonLabel}
-                                >
-                                    {formattedDateLabel}
-                                </Button>
-
-                                {showDatePicker ? (
-                                    <DateTimePicker
-                                        value={selectedDate}
-                                        mode="date"
-                                        minimumDate={new Date()}
-                                        onChange={(_, date) => {
-                                            setShowDatePicker(false);
-
-                                            if (date) {
-                                                setSelectedDate(date);
-                                                setHasPickedDate(true);
-                                                setSelectedTime('');
-                                                clearMessage();
-                                            }
-                                        }}
-                                    />
-                                ) : null}
+                                    minimumDate={new Date()}
+                                />
                             </View>
 
                             <View style={styles.section}>
