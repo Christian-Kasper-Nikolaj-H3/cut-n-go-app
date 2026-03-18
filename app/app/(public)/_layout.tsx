@@ -1,9 +1,20 @@
-import { Tabs } from 'expo-router';
+import { useEffect } from 'react';
+import { Tabs, router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/context/AuthContext';
 
 export default function PublicLayout() {
     const insets = useSafeAreaInsets();
+    const { loggedIn } = useAuth();
+
+    useEffect(() => {
+        if(loggedIn) {
+            console.log("Logged in - redirecting to /(private)");
+            router.push('/(private)');
+        }
+    }, [loggedIn]);
+
     return (
         <Tabs
             screenOptions={{

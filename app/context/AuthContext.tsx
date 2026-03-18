@@ -1,13 +1,14 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import * as SecureStore from 'expo-secure-store';
-import {getCurrentUserRequest, loginRequest, registerRequest, type AuthUser, type LoginPayload, type RegisterPayload} from '@/api/auth';
+import {loginRequest, registerRequest, type LoginPayload, type RegisterPayload} from '@/api/auth';
+import {setAuthTokenProvider} from '@/api/core/client';
 
 const TOKEN_KEY = 'auth_token';
 
 interface AuthContextValue {
     token: string | null;
-    user: AuthUser | null;
+    loggedIn: boolean;
     isLoading: boolean;
     login: (payload: LoginPayload) => Promise<void>;
     register: (payload: RegisterPayload) => Promise<void>;
@@ -18,64 +19,49 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({children}: PropsWithChildren) {
     const [token, setToken] = useState<string | null>(null);
-    const [user, setUser] = useState<AuthUser | null>(null);
+    const [loggedIn, setLoggedIn] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    const loadCurrentUser = useCallback(async (authToken: string) => {
-        const currentUser = await getCurrentUserRequest(authToken);
-        setUser(currentUser);
-    }, []);
+    useEffect(() => {
+        setLoggedIn(!!token);
+        setAuthTokenProvider(() => token);
+    }, [token]);
 
     useEffect(() => {
         async function restoreToken() {
-            try {
-                const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
-                setToken(storedToken);
-
-                if (storedToken) {
-                    await loadCurrentUser(storedToken);
-                } else {
-                    setUser(null);
-                }
-            } catch {
-                setToken(null);
-                setUser(null);
-            } finally {
-                setIsLoading(false);
-            }
+            const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
+            setToken(storedToken);
+            setIsLoading(false);
         }
 
         void restoreToken();
-    }, [loadCurrentUser]);
+    }, []);
 
     const login = useCallback(async (payload: LoginPayload) => {
         const response = await loginRequest(payload);
         await SecureStore.setItemAsync(TOKEN_KEY, response.token);
         setToken(response.token);
-        await loadCurrentUser(response.token);
-    }, [loadCurrentUser]);
+    }, []);
 
     const register = useCallback(async (payload: RegisterPayload) => {
         const response = await registerRequest(payload);
         await SecureStore.setItemAsync(TOKEN_KEY, response.token);
         setToken(response.token);
-        await loadCurrentUser(response.token);
-    }, [loadCurrentUser]);
+    }, []);
 
     const logout = useCallback(async () => {
         await SecureStore.deleteItemAsync(TOKEN_KEY);
         setToken(null);
-        setUser(null);
     }, []);
 
     const value = useMemo(() => ({
         token,
-        user,
+        loggedIn,
         isLoading,
         login,
         register,
         logout,
-    }), [token, user, isLoading, login, register, logout]);
+    }), [token, loggedIn, isLoading, login, register, logout]);
 
     return (
         <AuthContext.Provider value={value}>

@@ -3,21 +3,44 @@ import {getApiBaseUrl} from '@/api/core/config';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+type AuthTokenProvider = () => string | null;
+
+let authTokenProvider: AuthTokenProvider = () => null;
+
+export function setAuthTokenProvider(provider: AuthTokenProvider) {
+    authTokenProvider = provider;
+}
+
 interface RequestOptions<TPayload> {
     method: HttpMethod;
     path: string;
     payload?: TPayload;
+    token?: string;
     headers?: Record<string, string>;
 }
 
-export async function requestJson<TResponse, TPayload = undefined>({ method, path, payload }: RequestOptions<TPayload>): Promise<TResponse> {
+export async function requestJson<TResponse, TPayload = undefined>({
+    method,
+    path,
+    payload,
+    token,
+    headers,
+}: RequestOptions<TPayload>): Promise<TResponse> {
     let response: Response;
+    const resolvedToken = token ?? authTokenProvider();
+    const requestHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...headers,
+    };
+
+    if (resolvedToken) {
+        requestHeaders.Authorization = `Bearer ${resolvedToken}`;
+    }
+
     try {
         response = await fetch(`${getApiBaseUrl()}${path}`, {
             method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: requestHeaders,
             body: payload === undefined ? undefined : JSON.stringify(payload),
         });
     } catch {

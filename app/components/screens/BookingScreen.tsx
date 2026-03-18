@@ -21,6 +21,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { createBooking, getAvailableBookingTimes } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/context/UserContext';
 
 type MessageState = {
     type: 'success' | 'error';
@@ -37,7 +38,7 @@ type BookingScreenProps = {
 };
 
 export function BookingScreen({ isLoggedIn }: BookingScreenProps) {
-    const { user } = useAuth();
+    const { user } = useUser();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
