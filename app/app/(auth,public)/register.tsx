@@ -4,7 +4,7 @@ import {LinearGradient} from 'expo-linear-gradient';
 import {useState} from 'react';
 import {router} from 'expo-router';
 import {useAuth} from '@/context/AuthContext';
-import {ApiError, AppConfigError} from '@/api/auth';
+import {ApiError, AppConfigError} from '@/api/Auth';
 
 function getRegisterErrorMessage(error: unknown): string {
     if (error instanceof AppConfigError) {
@@ -182,10 +182,6 @@ export default function RegisterScreen() {
                         <Button mode="text" onPress={handleMoveToLogin}>
                             <Text>Already have an account? </Text>
                             <Text style={{color: '#be185d'}}>Sign in here</Text>
-                        </Button>
-
-                        <Button mode="text" onPress={handleContinueToBooking}>
-                            Continue to booking without login
                         </Button>
                     </View>
                 </View>

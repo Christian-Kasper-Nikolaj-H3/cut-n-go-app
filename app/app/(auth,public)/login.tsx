@@ -4,8 +4,7 @@ import {Text, TextInput, Button, HelperText, Divider} from 'react-native-paper';
 import {router} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useAuth} from '@/context/AuthContext';
-import {ApiError, AppConfigError} from '@/api/auth';
-import { PublicBottomNav } from '@/components/navigation/PublicBottomNav';
+import {ApiError, AppConfigError} from '@/api/Auth';
 
 function getLoginErrorMessage(error: unknown): string {
     if (error instanceof AppConfigError) {
@@ -138,8 +137,6 @@ export default function LoginScreen() {
                     </View>
                 </KeyboardAvoidingView>
             </LinearGradient>
-
-            <PublicBottomNav activeTab="login" />
         </View>
     );
 }

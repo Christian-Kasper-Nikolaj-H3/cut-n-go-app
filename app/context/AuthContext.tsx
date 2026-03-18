@@ -1,7 +1,7 @@
 import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import * as SecureStore from 'expo-secure-store';
-import {loginRequest, registerRequest, type LoginPayload, type RegisterPayload} from '@/api/auth';
+import {loginRequest, registerRequest, type LoginPayload, type RegisterPayload} from '@/api/Auth';
 import {setAuthTokenProvider} from '@/api/core/client';
 
 const TOKEN_KEY = 'auth_token';
