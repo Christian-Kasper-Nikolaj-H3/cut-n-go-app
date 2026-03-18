@@ -11,7 +11,7 @@ export default function AuthLayout() {
     useEffect(() => {
         if(loggedIn) {
             console.log("Logged in - redirecting to /(private)");
-            router.push('/(private)');
+            router.push('/(private)/dashboard');
         }
     }, [loggedIn]);
 

@@ -12,7 +12,7 @@ export default function TabLayout() {
         if(!loggedIn) {
             console.log("Not logged in - redirecting to /(public)");
             // @ts-ignore
-            router.push('/(public)');
+            router.push('/(public)/login');
         }
     }, [loggedIn]);
     return (

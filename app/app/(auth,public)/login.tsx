@@ -49,7 +49,7 @@ export default function LoginScreen() {
                 password,
             });
 
-            router.replace('/(private)');
+            router.replace('/(private)/dashboard');
         } catch (authError) {
             setError(getLoginErrorMessage(authError));
         } finally {
