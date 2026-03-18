@@ -142,7 +142,7 @@ export function HomeScreen() {
                 <Card style={styles.storyCard}>
                     <Card.Content style={styles.sectionContent}>
                         <Text variant="titleLarge" style={styles.sectionTitle}>
-                            Hvem er {name} Go?
+                            Hvem er {name}?
                         </Text>
                         <Text variant="bodyMedium" style={styles.storyText}>
                             {name} er en frisørkæde med fokus på nærvær, kvalitet og en tryg
