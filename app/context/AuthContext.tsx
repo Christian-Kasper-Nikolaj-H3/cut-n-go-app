@@ -7,6 +7,7 @@ const TOKEN_KEY = 'auth_token';
 
 interface AuthContextValue {
     token: string | null;
+    loggedIn: boolean;
     isLoading: boolean;
     login: (payload: LoginPayload) => Promise<void>;
     register: (payload: RegisterPayload) => Promise<void>;
@@ -17,7 +18,12 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({children}: PropsWithChildren) {
     const [token, setToken] = useState<string | null>(null);
+    const [loggedIn, setLoggedIn] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        setLoggedIn(!!token);
+    }, [token]);
 
     useEffect(() => {
         async function restoreToken() {
@@ -48,11 +54,12 @@ export function AuthProvider({children}: PropsWithChildren) {
 
     const value = useMemo(() => ({
         token,
+        loggedIn,
         isLoading,
         login,
         register,
         logout,
-    }), [token, isLoading, login, register, logout]);
+    }), [token, loggedIn, isLoading, login, register, logout]);
 
     return (
         <AuthContext.Provider value={value}>

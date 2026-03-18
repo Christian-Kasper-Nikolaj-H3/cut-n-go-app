@@ -1,6 +1,18 @@
 import { Drawer } from 'expo-router/drawer';
+import { Text } from 'react-native';
+import {useEffect} from "react";
+import {router} from "expo-router";
+import {useAuth} from "@/context/AuthContext";
 
 export default function AuthLayout() {
+    const {loggedIn} = useAuth();
+    useEffect(() => {
+        if(loggedIn) {
+            console.log("Logged in - redirecting to /(private)");
+            router.push('/(private)');
+        }
+    }, [loggedIn]);
+
     return (
         <Drawer>
             <Drawer.Screen

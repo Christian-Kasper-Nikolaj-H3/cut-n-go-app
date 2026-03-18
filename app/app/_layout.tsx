@@ -4,7 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 function RootNavigator() {
-    const { token, isLoading } = useAuth();
+    const { token, loggedIn, isLoading } = useAuth();
 
     if (isLoading) {
         return (
@@ -16,11 +16,11 @@ function RootNavigator() {
 
     return (
         <Stack initialRouteName="(public)" screenOptions={{ headerShown: false }}>
-            <Stack.Protected guard={!token}>
+            <Stack.Protected guard={!loggedIn}>
                 <Stack.Screen name="(auth)" />
             </Stack.Protected>
             <Stack.Screen name="(public)" />
-            <Stack.Protected guard={!!token}>
+            <Stack.Protected guard={loggedIn}>
                 <Stack.Screen name="(private)" />
             </Stack.Protected>
         </Stack>
