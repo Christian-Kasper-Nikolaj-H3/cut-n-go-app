@@ -3,10 +3,12 @@ import { Tabs, router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/context/UserContext';
 
 export default function TabLayout() {
     const insets = useSafeAreaInsets();
     const {loggedIn} = useAuth();
+    const { user } = useUser();
 
     useEffect(() => {
         if(!loggedIn) {
@@ -80,7 +82,24 @@ export default function TabLayout() {
                     ),
                 }}
             />
-
+            <Tabs.Screen
+                name="admin"
+                options={{
+                    title: 'Admin',
+                    href: user?.isAdmin ? '/(private)/admin' : null,
+                    sceneStyle: {
+                        backgroundColor: '#f5c2d7',
+                        paddingTop: 0,
+                    },
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'speedometer' : 'speedometer-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
 
             <Tabs.Screen
                 name="logout"

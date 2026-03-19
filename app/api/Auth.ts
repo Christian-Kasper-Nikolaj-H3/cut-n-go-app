@@ -30,6 +30,8 @@ export async function loginRequest(payload: LoginPayload): Promise<AuthResponse>
 
 export async function registerRequest(payload: RegisterPayload): Promise<AuthResponse> {
     const response = await postJson<AuthResponse, RegisterPayload>('/auth/register', payload);
+    console.log(response);
+
     if (!response.token) {
         throw new Error('Token missing in auth response.');
     }

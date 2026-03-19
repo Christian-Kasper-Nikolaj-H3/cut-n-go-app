@@ -9,6 +9,7 @@ export interface User {
     surname: string;
     phone: string;
     email: string;
+    isAdmin: boolean;
 }
 
 export async function getCurrentUser(): Promise<User> {

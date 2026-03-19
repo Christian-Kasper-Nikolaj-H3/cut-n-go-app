@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { UserProvider } from '@/context/UserContext';
+import { AdminProvider } from '@/context/AdminContext';
 
 const appTheme = {
     ...MD3LightTheme,
@@ -49,7 +50,9 @@ export default function RootLayout() {
             <PaperProvider theme={appTheme}>
                 <AuthProvider>
                     <UserProvider>
-                        <RootNavigator />
+                        <AdminProvider>
+                            <RootNavigator />
+                        </AdminProvider>
                     </UserProvider>
                 </AuthProvider>
             </PaperProvider>

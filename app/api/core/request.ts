@@ -17,6 +17,7 @@ interface RequestOptions<TPayload> {
     payload?: TPayload;
     token?: string;
     headers?: Record<string, string>;
+    allowEmptyResponse?: boolean;
 }
 
 export async function requestJson<TResponse, TPayload = undefined>({
@@ -25,6 +26,7 @@ export async function requestJson<TResponse, TPayload = undefined>({
     payload,
     token,
     headers,
+    allowEmptyResponse = false,
 }: RequestOptions<TPayload>): Promise<TResponse> {
     let response: Response;
     const resolvedToken = token ?? authTokenProvider();
@@ -62,9 +64,9 @@ export async function requestJson<TResponse, TPayload = undefined>({
         throw new ApiError(errorBody?.status ?? response.statusText ?? 'Request failed', response.status);
     }
 
-    if (!responseBody) {
+    if (!responseBody && !allowEmptyResponse) {
         throw new Error('Empty response body.');
     }
 
-    return responseBody;
+    return responseBody as TResponse;
 }

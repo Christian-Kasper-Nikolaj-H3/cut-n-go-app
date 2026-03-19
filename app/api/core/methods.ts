@@ -17,5 +17,5 @@ export async function patchJson<TResponse, TPayload>(path: string, payload: TPay
 }
 
 export async function deleteJson<TResponse>(path: string): Promise<TResponse> {
-    return requestJson<TResponse>({method: 'DELETE', path});
+    return requestJson<TResponse>({method: 'DELETE', path, allowEmptyResponse: true});
 }
