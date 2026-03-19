@@ -11,6 +11,7 @@ import {
 } from 'react-native-paper';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/context/UserContext';
 
 type Booking = {
     Id?: number | string;
@@ -26,7 +27,8 @@ type MessageState = {
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function DashboardScreen() {
-    const { token, user } = useAuth();
+    const { token } = useAuth();
+    const { user } = useUser();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);

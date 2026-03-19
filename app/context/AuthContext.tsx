@@ -1,4 +1,4 @@
-import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import * as SecureStore from 'expo-secure-store';
 import {loginRequest, registerRequest, type LoginPayload, type RegisterPayload} from '@/api/Auth';
@@ -54,17 +54,8 @@ export function AuthProvider({children}: PropsWithChildren) {
         setToken(null);
     }, []);
 
-    const value = useMemo(() => ({
-        token,
-        loggedIn,
-        isLoading,
-        login,
-        register,
-        logout,
-    }), [token, loggedIn, isLoading, login, register, logout]);
-
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext.Provider value={{ token, loggedIn, isLoading, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );

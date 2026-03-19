@@ -11,7 +11,6 @@ export default function TabLayout() {
     useEffect(() => {
         if(!loggedIn) {
             console.log("Not logged in - redirecting to /(public)");
-            // @ts-ignore
             router.push('/(public)/login');
         }
     }, [loggedIn]);
