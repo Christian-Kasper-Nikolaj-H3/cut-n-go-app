@@ -1,40 +1,83 @@
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
 import {FlatList, ScrollView, StyleSheet, View} from 'react-native';
 import { useAdmin } from '@/context/AdminContext';
-import {Button, Card, Chip, IconButton, Modal, Portal, Snackbar, Text, TextInput} from 'react-native-paper';
+import {Button, Card, Chip, IconButton, Portal, Snackbar, Text} from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import {SalonActionModal} from '@/components/admin/SalonActionModal';
+import {SalonFormFields, type SalonFormState} from '@/components/admin/SalonFormFields';
 
+type ActiveModal = 'create' | 'edit' | 'delete' | null;
 
 export default function AdminSalonsScreen() {
     const { createSalon, updateSalon, deleteSalon, salons } = useAdmin();
-    const [name, setName] = useState('');
-    const [address, setAddress] = useState('');
-    const [city, setCity] = useState('');
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
+    const [form, setForm] = useState<SalonFormState>({
+        name: '',
+        address: '',
+        city: '',
+        phone: '',
+        email: '',
+    });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
-    const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+    const [activeModal, setActiveModal] = useState<ActiveModal>(null);
     const [editingSalonId, setEditingSalonId] = useState<number | null>(null);
     const [deletingSalonId, setDeletingSalonId] = useState<number | null>(null);
     const [deletingSalonName, setDeletingSalonName] = useState('');
 
-    const canSubmit =
-        !!name.trim() &&
-        !!address.trim() &&
-        !!city.trim() &&
-        !!phone.trim() &&
-        !!email.trim() &&
-        !isSaving;
+    const canSubmit = useMemo(
+        () =>
+            !!form.name.trim() &&
+            !!form.address.trim() &&
+            !!form.city.trim() &&
+            !!form.phone.trim() &&
+            !!form.email.trim() &&
+            !isSaving,
+        [form, isSaving]
+    );
 
     function resetFormFields() {
-        setName('');
-        setAddress('');
-        setCity('');
-        setPhone('');
-        setEmail('');
+        setForm({
+            name: '',
+            address: '',
+            city: '',
+            phone: '',
+            email: '',
+        });
+    }
+
+    function openModal(
+        modal: Exclude<ActiveModal, null>,
+        salon?: { id?: number; name: string; address: string; city: string; phone: string; email: string }
+    ) {
+        if (modal === 'edit' && salon) {
+            setEditingSalonId(salon.id ?? null);
+            setForm({
+                name: salon.name,
+                address: salon.address,
+                city: salon.city,
+                phone: salon.phone,
+                email: salon.email,
+            });
+        }
+
+        if (modal === 'delete' && salon) {
+            setDeletingSalonId(salon.id ?? null);
+            setDeletingSalonName(salon.name);
+        }
+
+        if (modal === 'create') {
+            resetFormFields();
+        }
+
+        setActiveModal(modal);
+    }
+
+    function closeModal() {
+        setActiveModal(null);
+        setEditingSalonId(null);
+        setDeletingSalonId(null);
+        setDeletingSalonName('');
+        resetFormFields();
     }
 
     async function handleCreate() {
@@ -44,9 +87,15 @@ export default function AdminSalonsScreen() {
 
         setIsSaving(true);
         try {
-            await createSalon(name.trim(), address.trim(), city.trim(), phone.trim(), email.trim());
+            await createSalon(
+                form.name.trim(),
+                form.address.trim(),
+                form.city.trim(),
+                form.phone.trim(),
+                form.email.trim()
+            );
             resetFormFields();
-            setIsCreateModalVisible(false);
+            setActiveModal(null);
             setMessage('Salon oprettet');
         } catch (error) {
             setMessage(error instanceof Error ? error.message : 'Kunne ikke oprette salon');
@@ -64,13 +113,13 @@ export default function AdminSalonsScreen() {
         try {
             await updateSalon(
                 editingSalonId,
-                name.trim(),
-                address.trim(),
-                city.trim(),
-                phone.trim(),
-                email.trim()
+                form.name.trim(),
+                form.address.trim(),
+                form.city.trim(),
+                form.phone.trim(),
+                form.email.trim()
             );
-            setIsEditModalVisible(false);
+            setActiveModal(null);
             setEditingSalonId(null);
             resetFormFields();
             setMessage('Salon opdateret');
@@ -79,39 +128,6 @@ export default function AdminSalonsScreen() {
         } finally {
             setIsSaving(false);
         }
-    }
-
-    function openEditModal(salon: { id?: number; name: string; address: string; city: string; phone: string; email: string }) {
-        setEditingSalonId(salon.id ?? null);
-        setName(salon.name);
-        setAddress(salon.address);
-        setCity(salon.city);
-        setPhone(salon.phone);
-        setEmail(salon.email);
-        setIsEditModalVisible(true);
-    }
-
-    function closeEditModal() {
-        setIsEditModalVisible(false);
-        setEditingSalonId(null);
-        resetFormFields();
-    }
-
-    function closeCreateModal() {
-        setIsCreateModalVisible(false);
-        resetFormFields();
-    }
-
-    function openDeleteModal(salon: { id?: number; name: string }) {
-        setDeletingSalonId(salon.id ?? null);
-        setDeletingSalonName(salon.name);
-        setIsDeleteModalVisible(true);
-    }
-
-    function closeDeleteModal() {
-        setIsDeleteModalVisible(false);
-        setDeletingSalonId(null);
-        setDeletingSalonName('');
     }
 
     async function handleConfirmDelete() {
@@ -123,7 +139,7 @@ export default function AdminSalonsScreen() {
         try {
             await deleteSalon(deletingSalonId);
             setMessage(`"${deletingSalonName}" er slettet`);
-            closeDeleteModal();
+            closeModal();
         } catch (error) {
             setMessage(error instanceof Error ? error.message : 'Kunne ikke slette salon');
         } finally {
@@ -144,7 +160,7 @@ export default function AdminSalonsScreen() {
                     <Card style={styles.card}>
                         <Card.Title title="Opret salon" />
                         <Card.Content>
-                            <Button mode="contained" icon="plus" onPress={() => setIsCreateModalVisible(true)}>
+                            <Button mode="contained" icon="plus" onPress={() => openModal('create')}>
                                 Ny salon
                             </Button>
                         </Card.Content>
@@ -172,8 +188,8 @@ export default function AdminSalonsScreen() {
                                             <Text variant="bodySmall" style={styles.rowSubtitle}>{item.city} · {item.phone}</Text>
                                         </View>
                                         <View style={styles.rowActions}>
-                                            <IconButton icon="pencil" onPress={() => openEditModal(item)} />
-                                            <IconButton icon="delete" onPress={() => openDeleteModal(item)} />
+                                            <IconButton icon="pencil" onPress={() => openModal('edit', item)} />
+                                            <IconButton icon="delete" onPress={() => openModal('delete', item)} />
                                         </View>
                                     </View>
                                 )}
@@ -189,104 +205,51 @@ export default function AdminSalonsScreen() {
             </Snackbar>
 
             <Portal>
-                <Modal
-                    visible={isCreateModalVisible}
-                    onDismiss={closeCreateModal}
-                    contentContainerStyle={styles.modalContainer}
+                <SalonActionModal
+                    visible={activeModal === 'create'}
+                    title="Opret salon"
+                    primaryLabel="Opret"
+                    secondaryLabel="Luk"
+                    onPrimaryPress={handleCreate}
+                    onSecondaryPress={closeModal}
+                    onDismiss={closeModal}
+                    primaryLoading={isSaving}
+                    primaryDisabled={!canSubmit}
+                    secondaryDisabled={isSaving}
                 >
-                    <Text variant="titleLarge">Opret salon</Text>
-                    <View style={styles.form}>
-                        <TextInput label="Navn" mode="outlined" value={name} onChangeText={setName} />
-                        <TextInput label="Adresse" mode="outlined" value={address} onChangeText={setAddress} />
-                        <TextInput label="By" mode="outlined" value={city} onChangeText={setCity} />
-                        <TextInput label="Telefon" mode="outlined" value={phone} onChangeText={setPhone} />
-                        <TextInput label="Email" mode="outlined" value={email} onChangeText={setEmail} />
-                        <Button
-                            mode="contained"
-                            buttonColor="#be185d"
-                            textColor="#ffffff"
-                            onPress={handleCreate}
-                            loading={isSaving}
-                            disabled={!canSubmit}
-                            style={styles.primaryAction}
-                        >
-                            Opret
-                        </Button>
-                        <Button
-                            mode="text"
-                            textColor="#9d174d"
-                            onPress={closeCreateModal}
-                            disabled={isSaving}
-                            style={styles.secondaryAction}
-                        >
-                            Luk
-                        </Button>
-                    </View>
-                </Modal>
+                    <SalonFormFields value={form} onChange={(patch) => setForm((prev) => ({...prev, ...patch}))} />
+                </SalonActionModal>
 
-                <Modal
-                    visible={isEditModalVisible}
-                    onDismiss={closeEditModal}
-                    contentContainerStyle={styles.modalContainer}
+                <SalonActionModal
+                    visible={activeModal === 'edit'}
+                    title="Rediger salon"
+                    subtitle="Opdater oplysningerne og gem dine ændringer."
+                    primaryLabel="Gem ændringer"
+                    secondaryLabel="Annuller"
+                    onPrimaryPress={handleUpdate}
+                    onSecondaryPress={closeModal}
+                    onDismiss={closeModal}
+                    primaryLoading={isSaving}
+                    primaryDisabled={!canSubmit || editingSalonId === null}
+                    secondaryDisabled={isSaving}
                 >
-                    <Text variant="headlineSmall" style={styles.modalTitle}>Rediger salon</Text>
-                    <Text variant="bodyMedium" style={styles.modalSubtitle}>
-                        Opdater oplysningerne og gem dine ændringer.
-                    </Text>
-                    <View style={styles.form}>
-                        <TextInput label="Navn" mode="outlined" value={name} onChangeText={setName} />
-                        <TextInput label="Adresse" mode="outlined" value={address} onChangeText={setAddress} />
-                        <TextInput label="By" mode="outlined" value={city} onChangeText={setCity} />
-                        <TextInput label="Telefon" mode="outlined" value={phone} onChangeText={setPhone} />
-                        <TextInput label="Email" mode="outlined" value={email} onChangeText={setEmail} />
-                        <Button
-                            mode="contained"
-                            buttonColor="#be185d"
-                            textColor="#ffffff"
-                            onPress={handleUpdate}
-                            loading={isSaving}
-                            disabled={!canSubmit || editingSalonId === null}
-                            style={styles.primaryAction}
-                        >
-                            Gem ændringer
-                        </Button>
-                        <Button
-                            mode="text"
-                            textColor="#9d174d"
-                            onPress={closeEditModal}
-                            disabled={isSaving}
-                            style={styles.secondaryAction}
-                        >
-                            Annuller
-                        </Button>
-                    </View>
-                </Modal>
+                    <SalonFormFields value={form} onChange={(patch) => setForm((prev) => ({...prev, ...patch}))} />
+                </SalonActionModal>
 
-                <Modal
-                    visible={isDeleteModalVisible}
-                    onDismiss={closeDeleteModal}
-                    contentContainerStyle={styles.modalContainer}
-                >
-                    <Text variant="headlineSmall" style={styles.modalTitleDelete}>Bekræft sletning</Text>
-                    <Text variant="bodyMedium" style={styles.modalSubtitle}>
-                        Er du sikker på, at du vil slette {deletingSalonName ? `"${deletingSalonName}"` : 'denne salon'}?
-                    </Text>
-                    <View style={styles.deleteActions}>
-                        <Button mode="text" textColor="#9d174d" onPress={closeDeleteModal} disabled={isSaving}>
-                            Annuller
-                        </Button>
-                        <Button
-                            mode="contained"
-                            buttonColor="#b91c1c"
-                            onPress={handleConfirmDelete}
-                            loading={isSaving}
-                            disabled={isSaving || deletingSalonId === null}
-                            style={styles.deleteButton}
-                        >
-                            Slet
-                        </Button>
-                    </View>
-                </Modal>
+                <SalonActionModal
+                    visible={activeModal === 'delete'}
+                    title="Bekræft sletning"
+                    primaryLabel="Slet"
+                    secondaryLabel="Annuller"
+                    onPrimaryPress={handleConfirmDelete}
+                    onSecondaryPress={closeModal}
+                    onDismiss={closeModal}
+                    primaryLoading={isSaving}
+                    primaryDisabled={isSaving || deletingSalonId === null}
+                    secondaryDisabled={isSaving}
+                    variant="danger"
+                    subtitle={`Er du sikker på, at du vil slette ${deletingSalonName ? `"${deletingSalonName}"` : 'denne salon'}?`}
+                />
             </Portal>
         </LinearGradient>
     );
@@ -311,9 +274,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.06,
         shadowRadius: 8,
         elevation: 2,
-    },
-    form: {
-        gap: 12,
     },
     row: {
         flexDirection: 'row',
@@ -367,43 +327,8 @@ const styles = StyleSheet.create({
         color: '#71717a',
         paddingVertical: 8,
     },
-    modalContainer: {
-        margin: 16,
-        padding: 20,
-        borderRadius: 20,
-        backgroundColor: '#ffffff',
-        gap: 12,
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 3,
-    },
-    modalTitle: {
-        color: '#be185d',
-        fontWeight: '700',
-    },
-    modalTitleDelete: {
-        color: '#b91c1c',
-        fontWeight: '700',
-    },
     modalSubtitle: {
         color: '#52525b',
         opacity: 0.85,
-    },
-    primaryAction: {
-        marginTop: 6,
-        borderRadius: 10,
-    },
-    secondaryAction: {
-        marginTop: -4,
-    },
-    deleteButton: {
-        borderRadius: 10,
-    },
-    deleteActions: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        gap: 8,
     },
 });
