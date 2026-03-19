@@ -4,13 +4,18 @@ import { useUser } from "./UserContext";
 import {
     createSalon as apiCreateSalon,
     deleteSalon as apiDeleteSalon,
-    getAllSalons,
-    type Salon,
-    updateSalon as apiUpdateSalon
+    getAllSalons as apiGetAllSalons,
+    updateSalon as apiUpdateSalon,
+    type Salon
 } from "@/api/Salon";
+import {
+    getAllEmployees as apiGetAllEmployees,
+    type Employee
+} from "@/api/Employee";
 
 type AdminContextValue = {
     salons: Salon[];
+    employees: Employee[];
     createSalon: (name: string, address: string, city: string, phone: string, email: string) => Promise<Salon>;
     updateSalon: (id: number, name: string, address: string, city: string, phone: string, email: string) => Promise<Salon>;
     deleteSalon: (id: number) => Promise<void>;
@@ -22,20 +27,32 @@ export function AdminProvider({children} : PropsWithChildren) {
     const { loggedIn } = useAuth();
     const { user } = useUser();
     const [ salons, setSalons ] = useState<Salon[]>([]);
+    const [ employees, setEmployees ] = useState<Employee[]>([]);
 
     useEffect(() => {
-        async function fetchSalons() {
-            if(!loggedIn || !user?.isAdmin) {
-                setSalons([]);
-                return;
-            }
+        void fetchSalons();
+        void fetchEmployees();
+    }, [loggedIn, user?.isAdmin])
 
-            const response = await getAllSalons();
-            setSalons(response.data.salons ?? []);
+    async function fetchEmployees() {
+        if(!loggedIn || !user?.isAdmin) {
+            setEmployees([]);
+            return;
         }
 
-        void fetchSalons();
-    }, [loggedIn, user?.isAdmin])
+        const response = await apiGetAllEmployees();
+        setEmployees(response.data.employees ?? []);
+    }
+
+    async function fetchSalons() {
+        if(!loggedIn || !user?.isAdmin) {
+            setSalons([]);
+            return;
+        }
+
+        const response = await apiGetAllSalons();
+        setSalons(response.data.salons ?? []);
+    }
 
     async function createSalon(name: string, address: string, city: string, phone: string, email: string) {
         const res = await apiCreateSalon(name, address, city, phone, email);
@@ -57,7 +74,7 @@ export function AdminProvider({children} : PropsWithChildren) {
     }
 
     return (
-        <AdminContext.Provider value={{ salons, createSalon, updateSalon, deleteSalon }}>
+        <AdminContext.Provider value={{ employees, salons, createSalon, updateSalon, deleteSalon }}>
             {children}
         </AdminContext.Provider>
     );

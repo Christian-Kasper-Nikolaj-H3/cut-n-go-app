@@ -18,8 +18,16 @@ export default function AdminLayout() {
             <Drawer.Screen
                 name="salons"
                 options={{
-                    title: 'Salons',
-                    drawerLabel: 'Salons',
+                    title: 'Saloner',
+                    drawerLabel: 'Saloner',
+                }}
+            />
+
+            <Drawer.Screen
+                name="employees"
+                options={{
+                    title: 'Medarbejdere',
+                    drawerLabel: 'Medarbejdere',
                 }}
             />
         </Drawer>
