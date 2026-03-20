@@ -2,8 +2,6 @@ import { Sequelize } from "sequelize";
 
 import dbConfig from "../config/Database.js";
 import serverConfig from "../config/Server.js";
-import UserRoles from "./UserRoles";
-import EmployeeRoles from "./EmployeeRoles";
 
 const sequelize = new Sequelize(
     dbConfig.database,
@@ -49,6 +47,9 @@ export async function initializeDatabase() {
     }
 
     try {
+        const { default: UserRoles } = await import('./UserRoles.js');
+        const { default: EmployeeRoles } = await import('./EmployeeRoles.js');
+
         await UserRoles.bulkCreate([
             {name: 'user'},
             {name: 'admin'}
@@ -59,6 +60,6 @@ export async function initializeDatabase() {
             {name: 'manager'}
         ]);
     } catch (err) {
-
+        console.error('Unable to create dummy data:', err);
     }
 }
