@@ -39,14 +39,14 @@ export function AuthProvider({children}: PropsWithChildren) {
 
     const login = useCallback(async (payload: LoginPayload) => {
         const response = await loginRequest(payload);
-        await SecureStore.setItemAsync(TOKEN_KEY, response.token);
-        setToken(response.token);
+        await SecureStore.setItemAsync(TOKEN_KEY, response.data.token);
+        setToken(response.data.token);
     }, []);
 
     const register = useCallback(async (payload: RegisterPayload) => {
         const response = await registerRequest(payload);
-        await SecureStore.setItemAsync(TOKEN_KEY, response.token);
-        setToken(response.token);
+        await SecureStore.setItemAsync(TOKEN_KEY, response.data.token);
+        setToken(response.data.token);
     }, []);
 
     const logout = useCallback(async () => {

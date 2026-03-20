@@ -50,8 +50,8 @@ export default function RegisterScreen() {
         try {
             await register({
                 username: username.trim(),
-                name: name.trim(),
-                surname: surname.trim(),
+                firstName: name.trim(),
+                lastName: surname.trim(),
                 password,
                 phone: phone.trim(),
                 email: email.trim(),

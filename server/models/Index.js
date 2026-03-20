@@ -50,6 +50,9 @@ export async function initializeDatabase() {
         const { default: UserRoles } = await import('./UserRoles.js');
         const { default: EmployeeRoles } = await import('./EmployeeRoles.js');
 
+        const roles = await UserRoles.findAll();
+        if(roles.length > 0) return;
+
         await UserRoles.bulkCreate([
             {name: 'user'},
             {name: 'admin'}
