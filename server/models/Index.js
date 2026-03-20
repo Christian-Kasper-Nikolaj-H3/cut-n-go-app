@@ -2,6 +2,8 @@ import { Sequelize } from "sequelize";
 
 import dbConfig from "../config/Database.js";
 import serverConfig from "../config/Server.js";
+import UserRoles from "./UserRoles";
+import EmployeeRoles from "./EmployeeRoles";
 
 const sequelize = new Sequelize(
     dbConfig.database,
@@ -44,5 +46,19 @@ export async function initializeDatabase() {
     } catch (err) {
         console.error('Unable to connect to the database:', err);
         process.exit(1);
+    }
+
+    try {
+        await UserRoles.bulkCreate([
+            {name: 'user'},
+            {name: 'admin'}
+        ]);
+
+        await EmployeeRoles.bulkCreate([
+            {name: 'employee'},
+            {name: 'manager'}
+        ]);
+    } catch (err) {
+
     }
 }
