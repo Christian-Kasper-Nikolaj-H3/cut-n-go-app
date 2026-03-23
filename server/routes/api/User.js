@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
 import { body } from 'express-validator';
 
 import { authenticateToken } from "../../middlewares/Auth.js"
@@ -9,12 +8,38 @@ import { handleValidationErrors } from "../../middlewares/Validation.js";
 import Users from "../../models/Users.js";
 import UserInformation from "../../models/UserInformation.js";
 import UserRoles from "../../models/UserRoles.js"
+import Bookings from "../../models/Bookings.js";
 
 const router = Router();
 
 const profileValidation = [
 
 ];
+
+router.get('/bookings', authenticateToken, ...profileValidation, handleValidationErrors, async (req, res) => {
+    try {
+        const { userId } = req.user;
+
+        const bookings = await Bookings.findAll({
+            where: { user_id: userId}
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Bookings retrieved successfully",
+            data:{
+                bookings: bookings
+            }
+        });
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+})
 
 router.get('/me', authenticateToken, ...profileValidation, handleValidationErrors, async (req, res) => {
     try {
