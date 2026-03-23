@@ -17,6 +17,40 @@ export interface UserResponse {
     data: User;
 }
 
+export interface UserBookingReponse {
+    success: boolean;
+    message: string;
+    data: {
+        bookings: Booking[];
+    }
+}
+
+export interface Booking {
+    id: number;
+    date: string;
+    employee: {
+        id: number;
+        user: {
+            id: number;
+            information: {
+                first_name: string;
+                last_name: string;
+            }
+        }
+    };
+    salon: {
+        name: string;
+        address: string;
+        city: string;
+        phone: string;
+        email: string;
+    }
+}
+
 export async function getCurrentUser(): Promise<UserResponse> {
     return await getJson<UserResponse>('/api/user/me');
+}
+
+export async function getUserBookings(): Promise<UserBookingReponse> {
+    return await getJson<UserBookingReponse>('/api/user/bookings');
 }

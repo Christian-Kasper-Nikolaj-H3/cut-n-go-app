@@ -1,147 +1,30 @@
-import { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Card, Text } from 'react-native-paper';
-import { useAuth } from '@/context/AuthContext';
+import {ActivityIndicator, Card, Chip, Text} from 'react-native-paper';
 import { useUser } from '@/context/UserContext';
-import { AppSnackbar } from '@/components/common/AppSnackbar';
-import { getMyBookings, type Booking } from '@/api/Booking';
-import { BookingSection } from '@/components/dashboard/BookingSection';
-
-export type BookingStatus = 'upcoming' | 'completed';
-
-export type DashboardBooking = {
-    key: string;
-    id?: number | string;
-    salon_id?: string;
-    date?: string;
-    dateValue: number;
-};
-
-type MessageState = {
-    type: 'error' | 'success';
-    text: string;
-} | null;
-
-const DASHBOARD_GRADIENT = ['#ffeef8', '#fff0f5', '#ffe6f0'] as const;
-const ERROR_TEXT = 'Der opstod en fejl ved hentning af bookinger.';
-const UNKNOWN_TEXT = 'Ukendt dato';
-
-function isValidDate(value?: string): value is string {
-    if (!value) {
-        return false;
-    }
-
-    const date = new Date(value);
-    return !Number.isNaN(date.getTime());
-}
-
-function formatBookingDate(value?: string) {
-    if (!isValidDate(value)) {
-        return UNKNOWN_TEXT;
-    }
-
-    return new Date(value).toLocaleString('da-DK', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-    });
-}
-
-function toDashboardBooking(booking: Booking, index: number): DashboardBooking | null {
-    if (!isValidDate(booking.date)) {
-        return null;
-    }
-
-    return {
-        ...booking,
-        key: `${booking.id ?? 'booking'}-${booking.date}-${index}`,
-        dateValue: new Date(booking.date).getTime(),
-    };
-}
-
-function sortBookings(bookings: Booking[]) {
-    const now = Date.now();
-
-    return bookings
-        .map(toDashboardBooking)
-        .filter((booking): booking is DashboardBooking => booking !== null)
-        .reduce(
-            (acc, booking) => {
-                if (booking.dateValue > now) {
-                    acc.upcoming.push(booking);
-                } else {
-                    acc.completed.push(booking);
-                }
-                return acc;
-            },
-            { upcoming: [] as DashboardBooking[], completed: [] as DashboardBooking[] }
-        );
-}
+import {UserBookingCard} from "@/components/UserBookingCard/UserBookingCard";
+import {useEffect, useState} from "react";
+import {Booking} from "@/api/User";
 
 export default function DashboardScreen() {
-    const { token } = useAuth();
-    const { user } = useUser();
-    const [bookings, setBookings] = useState<Booking[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [message, setMessage] = useState<MessageState>(null);
+    const { user, bookings: userBookings, bookingsLoading } = useUser();
+    const [ upcoming, setUpcoming ] = useState<Booking[]>([]);
+    const [ completed, setCompleted ] = useState<Booking[]>([]);
 
-    const loadBookings = useCallback(
-        async (refresh = false) => {
-            if (!token) {
-                setBookings([]);
-                setIsLoading(false);
-                setIsRefreshing(false);
-                return;
-            }
+    useEffect(() => {
+        function filterBookings() {
+            if(!userBookings) return;
 
-            if (refresh) {
-                setIsRefreshing(true);
-            } else {
-                setIsLoading(true);
-            }
-
-            try {
-                const response = await getMyBookings();
-                setBookings(response.data.bookings ?? []);
-            } catch (error) {
-                setBookings([]);
-                setMessage({
-                    type: 'error',
-                    text: error instanceof Error ? error.message : ERROR_TEXT,
-                });
-            } finally {
-                setIsLoading(false);
-                setIsRefreshing(false);
-            }
-        },
-        [token]
-    );
-
-    useFocusEffect(
-        useCallback(() => {
-            void loadBookings();
-        }, [loadBookings])
-    );
-
-    const { upcoming, completed } = useMemo(() => sortBookings(bookings), [bookings]);
-
-    const statusText = useMemo(() => {
-        if (isLoading) {
-            return 'Henter bookinger...';
+            setUpcoming(userBookings.filter(booking => new Date(booking.date) > new Date()));
+            setCompleted(userBookings.filter(booking => new Date(booking.date) < new Date()));
         }
 
-        if (bookings.length === 0) {
-            return 'Du har ingen bookinger endnu.';
-        }
-
-        return `Du har ${upcoming.length} kommende og ${completed.length} afsluttede bookinger.`;
-    }, [bookings.length, completed.length, isLoading, upcoming.length]);
+        filterBookings();
+    }, [user, userBookings]);
 
     return (
         <LinearGradient
-            colors={DASHBOARD_GRADIENT}
+            colors={['#ffeef8', '#fff0f5', '#ffe6f0']}
             locations={[0, 0.5, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -150,13 +33,6 @@ export default function DashboardScreen() {
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={() => void loadBookings(true)}
-                        tintColor="#be185d"
-                    />
-                }
             >
                 <Card style={styles.heroCard}>
                     <Card.Content style={styles.heroContent}>
@@ -187,14 +63,10 @@ export default function DashboardScreen() {
                                 </Text>
                             </View>
                         </View>
-
-                        <Text variant="bodySmall" style={styles.statusText}>
-                            {statusText}
-                        </Text>
                     </Card.Content>
                 </Card>
 
-                {isLoading ? (
+                {bookingsLoading ? (
                     <View style={styles.loadingWrapper}>
                         <ActivityIndicator animating size="large" color="#be185d" />
                         <Text variant="bodyMedium" style={styles.loadingText}>
@@ -203,33 +75,40 @@ export default function DashboardScreen() {
                     </View>
                 ) : (
                     <>
-                        <BookingSection
-                            title="Kommende bookinger"
-                            count={upcoming.length}
-                            bookings={upcoming}
-                            status="upcoming"
-                            emptyText="Ingen kommende bookinger."
-                            formatDate={formatBookingDate}
-                        />
-                        <BookingSection
-                            title="Afsluttede bookinger"
-                            count={completed.length}
-                            bookings={completed}
-                            status="completed"
-                            emptyText="Ingen afsluttede bookinger."
-                            formatDate={formatBookingDate}
-                        />
+                        <View style={styles.sectionHeader}>
+                            <Text variant="titleLarge" style={styles.sectionTitle}>
+                                Kommende bookinger
+                            </Text>
+                            <Chip compact style={styles.countChip} textStyle={styles.countChipText}>
+                                {upcoming!.length}
+                            </Chip>
+                        </View>
+                        {upcoming && upcoming.map((booking) => (
+                            <UserBookingCard
+                                key={booking.id}
+                                booking={booking}
+                                status={"upcoming"}
+                            />
+                        ))}
+
+                        <View style={styles.sectionHeader}>
+                            <Text variant="titleLarge" style={styles.sectionTitle}>
+                                Afsluttede bookinger
+                            </Text>
+                            <Chip compact style={styles.countChip} textStyle={styles.countChipText}>
+                                {completed!.length}
+                            </Chip>
+                        </View>
+                        {completed && completed.map((booking) => (
+                            <UserBookingCard
+                                key={booking.id}
+                                booking={booking}
+                                status={"completed"}
+                            />
+                        ))}
                     </>
                 )}
             </ScrollView>
-
-            <AppSnackbar
-                visible={!!message}
-                message={message?.text ?? ''}
-                type={message?.type ?? 'info'}
-                onDismiss={() => setMessage(null)}
-                duration={3500}
-            />
         </LinearGradient>
     );
 }

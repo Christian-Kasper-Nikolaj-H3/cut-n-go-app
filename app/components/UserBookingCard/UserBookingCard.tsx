@@ -1,24 +1,23 @@
 import { View, StyleSheet } from 'react-native';
 import { Card, Chip, Divider, Text } from 'react-native-paper';
-import type { BookingStatus } from '@/app/(private)/dashboard';
+import { type Booking } from '@/api/User';
 
-export type BookingCardProps = {
-    booking: {
-        id?: number | string;
-        salon_id?: string;
-        date?: string;
-    };
-    status: BookingStatus;
-    formatDate: (value?: string) => string;
-};
+export function UserBookingCard({
+    booking,
+    status
+} : {
+    booking: Booking;
+    status: 'upcoming' | 'completed';
+}) {
 
-export function BookingCard({ booking, status, formatDate }: BookingCardProps) {
+    const formatBookingDate = (value: string) => new Date(value).toLocaleString('da-DK', { dateStyle: 'short', timeStyle: 'short'});
+
     return (
         <Card style={styles.bookingCard}>
             <Card.Content style={styles.bookingCardContent}>
                 <View style={styles.bookingCardHeader}>
                     <Text variant="titleMedium" style={styles.bookingTitle}>
-                        Ordre #{booking.id ?? '—'}
+                        Ordre #{booking.id}
                     </Text>
 
                     <Chip
@@ -42,7 +41,7 @@ export function BookingCard({ booking, status, formatDate }: BookingCardProps) {
                         Salon
                     </Text>
                     <Text variant="bodyMedium" style={styles.infoValue}>
-                        {booking.salon_id ?? '—'}
+                        {booking.salon.name}
                     </Text>
                 </View>
 
@@ -51,7 +50,7 @@ export function BookingCard({ booking, status, formatDate }: BookingCardProps) {
                         Tid
                     </Text>
                     <Text variant="bodyMedium" style={styles.infoValue}>
-                        {formatDate(booking.date)}
+                        {formatBookingDate(booking.date)}
                     </Text>
                 </View>
             </Card.Content>
