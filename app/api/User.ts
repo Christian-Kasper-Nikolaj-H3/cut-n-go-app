@@ -12,6 +12,11 @@ export interface User {
     email: string;
 }
 
-export async function getCurrentUser(): Promise<User> {
-    return getJson<User>('/api/user/me');
+export interface UserResponse {
+    success: boolean;
+    data: User;
+}
+
+export async function getCurrentUser(): Promise<UserResponse> {
+    return await getJson<UserResponse>('/api/user/me');
 }

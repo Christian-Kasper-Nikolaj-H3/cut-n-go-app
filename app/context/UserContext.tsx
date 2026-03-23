@@ -19,7 +19,8 @@ export function UserProvider({children} : PropsWithChildren) {
                 return;
             }
 
-            setUser(await getCurrentUser());
+            const response = await getCurrentUser();
+            setUser(response.data);
         }
 
         void fetchUser();
