@@ -11,6 +11,7 @@ import authRoutes from './routes/auth/Auth.js';
 import userRoutes from './routes/api/User.js';
 import bookingRoutes from './routes/api/Bookings.js';
 import salonRoutes from './routes/api/Salons.js';
+import employeeRoutes from './routes/api/Employees.js';
 
 const app = express();
 await initializeDatabase();
@@ -24,6 +25,7 @@ app.use('/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/salon', salonRoutes);
+app.use('/api/employee', employeeRoutes);
 
 const server = app.listen(serverConfig.port, serverConfig.host, () => {
     console.log(`Server listening on ${serverConfig.host}:${serverConfig.port}`);
