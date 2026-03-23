@@ -86,7 +86,7 @@ export default function TabLayout() {
                 name="admin"
                 options={{
                     title: 'Admin',
-                    href: user?.isAdmin ? '/(private)/admin' : null,
+                    href: user?.is_admin ? '/(private)/admin' : null,
                     sceneStyle: {
                         backgroundColor: '#f5c2d7',
                         paddingTop: 0,

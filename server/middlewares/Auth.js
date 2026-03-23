@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import Users from '../models/Users.js';
 import UserInformation from "../models/UserInformation.js";
 import serverConfig from '../config/Server.js';
-import UserRoles from "../models/UserRoles";
+import UserRoles from "../models/UserRoles.js";
 
 export const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization'];

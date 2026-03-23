@@ -5,13 +5,13 @@ export {ApiError, AppConfigError} from '@/api/core/errors';
 export interface User {
     id: number;
     username: string;
-    name: string;
-    surname: string;
+    is_admin: boolean;
+    first_name: string;
+    last_name: string;
     phone: string;
     email: string;
-    isAdmin: boolean;
 }
 
 export async function getCurrentUser(): Promise<User> {
-    return getJson<User>('/user/me');
+    return getJson<User>('/api/user/me');
 }

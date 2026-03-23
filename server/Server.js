@@ -8,6 +8,7 @@ import { initializeDatabase } from './models/Index.js';
 
 // Import routes
 import authRoutes from './routes/auth/Auth.js';
+import userRoutes from './routes/api/User.js';
 
 const app = express();
 await initializeDatabase();
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // API routes
 app.use('/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 const server = app.listen(serverConfig.port, serverConfig.host, () => {
     console.log(`Server listening on ${serverConfig.host}:${serverConfig.port}`);
