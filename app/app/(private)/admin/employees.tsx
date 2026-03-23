@@ -57,10 +57,10 @@ export default function Employees() {
                                     <View style={styles.row}>
                                         <View style={styles.rowInfo}>
                                             <Text variant="titleMedium" style={styles.rowTitle}>
-                                                {item.first_name} {item.last_name}
+                                                {item.user.information.first_name} {item.user.information.last_name}
                                             </Text>
                                             <Text variant="bodySmall" style={styles.rowSubtitle}>
-                                                {item.salon} - {item.role}
+                                                {item.salon.name} - {item.role.name}
                                             </Text>
                                         </View>
                                         <View style={styles.rowActions}>

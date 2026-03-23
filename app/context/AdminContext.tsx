@@ -25,27 +25,27 @@ const AdminContext = createContext<AdminContextValue | undefined>(undefined);
 
 export function AdminProvider({children} : PropsWithChildren) {
     const { loggedIn } = useAuth();
-    const { user } = useUser();
     const [ salons, setSalons ] = useState<Salon[]>([]);
     const [ employees, setEmployees ] = useState<Employee[]>([]);
 
     useEffect(() => {
         void fetchSalons();
         void fetchEmployees();
-    }, [loggedIn, user?.isAdmin])
+    }, [loggedIn])
 
     async function fetchEmployees() {
-        if(!loggedIn || !user?.isAdmin) {
+        if(!loggedIn) {
             setEmployees([]);
             return;
         }
 
         const response = await apiGetAllEmployees();
+        console.log(response.data);
         setEmployees(response.data.employees ?? []);
     }
 
     async function fetchSalons() {
-        if(!loggedIn || !user?.isAdmin) {
+        if(!loggedIn) {
             setSalons([]);
             return;
         }

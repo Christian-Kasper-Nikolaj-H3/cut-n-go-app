@@ -5,6 +5,10 @@ import { authenticateToken } from "../../middlewares/Auth.js"
 import { handleValidationErrors } from "../../middlewares/Validation.js";
 
 import Employee from "../../models/Employees.js";
+import Users from "../../models/Users.js";
+import UserInformation from "../../models/UserInformation.js";
+import Salon from "../../models/Salon.js";
+import EmployeeRoles from "../../models/EmployeeRoles.js";
 
 const router = Router();
 
@@ -17,7 +21,32 @@ const employeeValidation = [
 
 router.get('/all', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
     try {
-        const employees = await Employee.findAll({});
+        const employees = await Employee.findAll({
+            include: [
+                {
+                    model: Users,
+                    as: 'user',
+                    attributes: ['id', 'username'],
+                    include: [
+                        {
+                            model: UserInformation,
+                            as: 'information',
+                            attributes: ['first_name', 'last_name', 'phone', 'email']
+                        }
+                    ]
+                },
+                {
+                    model: Salon,
+                    as: 'salon',
+                    attributes: ['id', 'name', 'address', 'city', 'phone', 'email']
+                },
+                {
+                    model: EmployeeRoles,
+                    as: 'role',
+                    attributes: ['name']
+                }
+            ]
+        });
 
         return res.status(200).json({
             success: true,
@@ -38,7 +67,6 @@ router.get('/all', authenticateToken, ...employeeValidation, handleValidationErr
 
 router.post('/new', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
     try {
-        const { userId } = req.user;
         const { role_id, salon_id, user_id } = req.body;
 
         const employee = await Employee.create({
@@ -46,6 +74,28 @@ router.post('/new', authenticateToken, ...employeeValidation, handleValidationEr
             salon_id: salon_id,
             user_id: user_id
         });
+
+        await employee.reload({
+            include: [
+                {
+                    model: Users,
+                    as: 'user',
+                    attributes: ['id', 'username'],
+                    include: [
+                        {
+                            model: UserInformation,
+                            as: 'information',
+                            attributes: ['first_name', 'last_name', 'phone', 'email']
+                        }
+                    ]
+                },
+                {
+                    model: Salon,
+                    as: 'salon',
+                    attributes: ['id', 'name', 'address', 'city', 'phone', 'email']
+                }
+            ]
+        })
 
         return res.status(201).json({
             success: true,
