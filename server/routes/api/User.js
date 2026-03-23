@@ -9,6 +9,7 @@ import Users from "../../models/Users.js";
 import UserInformation from "../../models/UserInformation.js";
 import UserRoles from "../../models/UserRoles.js"
 import Bookings from "../../models/Bookings.js";
+import BookingInformation from "../../models/BookingInformation.js";
 
 const router = Router();
 
@@ -19,9 +20,22 @@ const profileValidation = [
 router.get('/bookings', authenticateToken, ...profileValidation, handleValidationErrors, async (req, res) => {
     try {
         const { userId } = req.user;
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid token payload"
+            });
+        }
 
         const bookings = await Bookings.findAll({
-            where: { user_id: userId}
+            include: [
+                {
+                    model: BookingInformation,
+                    as: 'information',
+                    where: { user_id: userId },
+                    required: true
+                }
+            ]
         });
 
         return res.status(200).json({

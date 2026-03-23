@@ -27,7 +27,7 @@ export const authenticateToken = async (req, res, next) => {
         }
 
         const user = await Users.findByPk(decoded.userId, {
-            attributes: ['username'],
+            attributes: ['id', 'username', 'role_id'],
             include: [
                 {
                     model: UserInformation,
@@ -49,7 +49,10 @@ export const authenticateToken = async (req, res, next) => {
             });
         }
 
-        req.user = user.toJSON();
+        req.user = {
+            userId: user.id,
+            ...user.toJSON()
+        };
         next();
     } catch (err) {
         if (err.name === 'TokenExpiredError') {
