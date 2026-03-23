@@ -60,8 +60,11 @@ export async function requestJson<TResponse, TPayload = undefined>({
     }
 
     if (!response.ok) {
-        const errorBody = responseBody as { status?: string } | null;
-        throw new ApiError(errorBody?.status ?? response.statusText ?? 'Request failed', response.status);
+        const errorBody = responseBody as { message?: string; status?: string } | null;
+        throw new ApiError(
+            errorBody?.message ?? errorBody?.status ?? response.statusText ?? 'Request failed',
+            response.status
+        );
     }
 
     if (!responseBody && !allowEmptyResponse) {

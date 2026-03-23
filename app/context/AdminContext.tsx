@@ -39,9 +39,12 @@ export function AdminProvider({children} : PropsWithChildren) {
             return;
         }
 
-        const response = await apiGetAllEmployees();
-        console.log(response.data);
-        setEmployees(response.data.employees ?? []);
+        try {
+            const response = await apiGetAllEmployees();
+            setEmployees(response.data.employees ?? []);
+        } catch {
+            setEmployees([]);
+        }
     }
 
     async function fetchSalons() {
@@ -50,8 +53,12 @@ export function AdminProvider({children} : PropsWithChildren) {
             return;
         }
 
-        const response = await apiGetAllSalons();
-        setSalons(response.data.salons ?? []);
+        try {
+            const response = await apiGetAllSalons();
+            setSalons(response.data.salons ?? []);
+        } catch {
+            setSalons([]);
+        }
     }
 
     async function createSalon(name: string, address: string, city: string, phone: string, email: string) {
