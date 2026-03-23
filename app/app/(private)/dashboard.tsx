@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-    ActivityIndicator,
-    Card,
-    Chip,
-    Divider,
-    Snackbar,
-    Text,
-} from 'react-native-paper';
 import { useFocusEffect } from 'expo-router';
+import { ActivityIndicator, Card, Text } from 'react-native-paper';
 import { useAuth } from '@/context/AuthContext';
 import { useUser } from '@/context/UserContext';
+import { AppSnackbar } from '@/components/common/AppSnackbar';
+import { getMyBookings, type Booking } from '@/api/Booking';
+import { BookingSection } from '@/components/dashboard/BookingSection';
 
-type Booking = {
-    Id?: number | string;
-    SalonID?: number | string;
-    BestillingDato?: string;
+export type BookingStatus = 'upcoming' | 'completed';
+
+export type DashboardBooking = {
+    key: string;
+    id?: number | string;
+    salon_id?: string;
+    date?: string;
+    dateValue: number;
 };
 
 type MessageState = {
@@ -24,7 +24,60 @@ type MessageState = {
     text: string;
 } | null;
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const DASHBOARD_GRADIENT = ['#ffeef8', '#fff0f5', '#ffe6f0'] as const;
+const ERROR_TEXT = 'Der opstod en fejl ved hentning af bookinger.';
+const UNKNOWN_TEXT = 'Ukendt dato';
+
+function isValidDate(value?: string): value is string {
+    if (!value) {
+        return false;
+    }
+
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime());
+}
+
+function formatBookingDate(value?: string) {
+    if (!isValidDate(value)) {
+        return UNKNOWN_TEXT;
+    }
+
+    return new Date(value).toLocaleString('da-DK', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+    });
+}
+
+function toDashboardBooking(booking: Booking, index: number): DashboardBooking | null {
+    if (!isValidDate(booking.date)) {
+        return null;
+    }
+
+    return {
+        ...booking,
+        key: `${booking.id ?? 'booking'}-${booking.date}-${index}`,
+        dateValue: new Date(booking.date).getTime(),
+    };
+}
+
+function sortBookings(bookings: Booking[]) {
+    const now = Date.now();
+
+    return bookings
+        .map(toDashboardBooking)
+        .filter((booking): booking is DashboardBooking => booking !== null)
+        .reduce(
+            (acc, booking) => {
+                if (booking.dateValue > now) {
+                    acc.upcoming.push(booking);
+                } else {
+                    acc.completed.push(booking);
+                }
+                return acc;
+            },
+            { upcoming: [] as DashboardBooking[], completed: [] as DashboardBooking[] }
+        );
+}
 
 export default function DashboardScreen() {
     const { token } = useAuth();
@@ -34,102 +87,45 @@ export default function DashboardScreen() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [message, setMessage] = useState<MessageState>(null);
 
-    const formatDate = useCallback((value?: string) => {
-        if (!value) {
-            return 'Ukendt dato';
-        }
-
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-            return 'Ukendt dato';
-        }
-
-        return date.toLocaleString('da-DK', {
-            dateStyle: 'short',
-            timeStyle: 'short',
-        });
-    }, []);
-
-    const loadBookings = useCallback(async (refresh = false) => {
-        if (!token || !BASE_URL) {
-            setBookings([]);
-            setIsLoading(false);
-            setIsRefreshing(false);
-            return;
-        }
-
-        if (refresh) {
-            setIsRefreshing(true);
-        } else {
-            setIsLoading(true);
-        }
-
-        try {
-            const response = await fetch(`${BASE_URL}/user/bookings`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data?.status || 'Kunne ikke hente bookinger.');
+    const loadBookings = useCallback(
+        async (refresh = false) => {
+            if (!token) {
+                setBookings([]);
+                setIsLoading(false);
+                setIsRefreshing(false);
+                return;
             }
 
-            setBookings(Array.isArray(data?.bookings) ? data.bookings : []);
-        } catch (error) {
-            setBookings([]);
-            setMessage({
-                type: 'error',
-                text: error instanceof Error
-                    ? error.message
-                    : 'Der opstod en fejl ved hentning af bookinger.',
-            });
-        } finally {
-            setIsLoading(false);
-            setIsRefreshing(false);
-        }
-    }, [token]);
+            if (refresh) {
+                setIsRefreshing(true);
+            } else {
+                setIsLoading(true);
+            }
 
-    useEffect(() => {
-        void loadBookings();
-    }, [loadBookings]);
+            try {
+                const response = await getMyBookings();
+                setBookings(response.data.bookings ?? []);
+            } catch (error) {
+                setBookings([]);
+                setMessage({
+                    type: 'error',
+                    text: error instanceof Error ? error.message : ERROR_TEXT,
+                });
+            } finally {
+                setIsLoading(false);
+                setIsRefreshing(false);
+            }
+        },
+        [token]
+    );
 
     useFocusEffect(
         useCallback(() => {
-            void loadBookings(true);
+            void loadBookings();
         }, [loadBookings])
     );
 
-    const { upcomingBookings, completedBookings } = useMemo(() => {
-        const now = new Date();
-
-        const validBookings = bookings.filter((booking) => {
-            const date = new Date(booking.BestillingDato ?? '');
-            return !Number.isNaN(date.getTime());
-        });
-
-        return {
-            upcomingBookings: validBookings
-                .filter((booking) => new Date(booking.BestillingDato as string) > now)
-                .sort(
-                    (a, b) =>
-                        new Date(a.BestillingDato as string).getTime() -
-                        new Date(b.BestillingDato as string).getTime()
-                ),
-            completedBookings: validBookings
-                .filter((booking) => new Date(booking.BestillingDato as string) <= now)
-                .sort(
-                    (a, b) =>
-                        new Date(b.BestillingDato as string).getTime() -
-                        new Date(a.BestillingDato as string).getTime()
-                ),
-        };
-    }, [bookings]);
+    const { upcoming, completed } = useMemo(() => sortBookings(bookings), [bookings]);
 
     const statusText = useMemo(() => {
         if (isLoading) {
@@ -140,94 +136,12 @@ export default function DashboardScreen() {
             return 'Du har ingen bookinger endnu.';
         }
 
-        return `Du har ${upcomingBookings.length} kommende og ${completedBookings.length} afsluttede bookinger.`;
-    }, [bookings.length, completedBookings.length, isLoading, upcomingBookings.length]);
-
-    function renderBookingCard(booking: Booking, type: 'upcoming' | 'completed') {
-        return (
-            <Card
-                key={`${booking.Id ?? 'booking'}-${booking.BestillingDato ?? Math.random()}`}
-                style={styles.bookingCard}
-            >
-                <Card.Content style={styles.bookingCardContent}>
-                    <View style={styles.bookingCardHeader}>
-                        <Text variant="titleMedium" style={styles.bookingTitle}>
-                            Ordre #{booking.Id ?? '—'}
-                        </Text>
-                        <Chip
-                            compact
-                            style={[
-                                styles.statusChip,
-                                type === 'upcoming'
-                                    ? styles.statusChipUpcoming
-                                    : styles.statusChipCompleted,
-                            ]}
-                            textStyle={styles.statusChipText}
-                        >
-                            {type === 'upcoming' ? 'Kommende' : 'Afsluttet'}
-                        </Chip>
-                    </View>
-
-                    <Divider style={styles.divider} />
-
-                    <View style={styles.infoRow}>
-                        <Text variant="labelMedium" style={styles.infoLabel}>
-                            Salon
-                        </Text>
-                        <Text variant="bodyMedium" style={styles.infoValue}>
-                            {booking.SalonID ?? '—'}
-                        </Text>
-                    </View>
-
-                    <View style={styles.infoRow}>
-                        <Text variant="labelMedium" style={styles.infoLabel}>
-                            Tid
-                        </Text>
-                        <Text variant="bodyMedium" style={styles.infoValue}>
-                            {formatDate(booking.BestillingDato)}
-                        </Text>
-                    </View>
-                </Card.Content>
-            </Card>
-        );
-    }
-
-    function renderSection(
-        title: string,
-        count: number,
-        items: Booking[],
-        type: 'upcoming' | 'completed',
-        emptyText: string
-    ) {
-        return (
-            <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text variant="titleLarge" style={styles.sectionTitle}>
-                        {title}
-                    </Text>
-                    <Chip compact style={styles.countChip} textStyle={styles.countChipText}>
-                        {count}
-                    </Chip>
-                </View>
-
-                {items.length === 0 ? (
-                    <Card style={styles.emptyCard}>
-                        <Card.Content>
-                            <Text variant="bodyMedium" style={styles.emptyText}>
-                                {emptyText}
-                            </Text>
-                        </Card.Content>
-                    </Card>
-                ) : (
-                    items.map((booking) => renderBookingCard(booking, type))
-                )}
-            </View>
-        );
-    }
+        return `Du har ${upcoming.length} kommende og ${completed.length} afsluttede bookinger.`;
+    }, [bookings.length, completed.length, isLoading, upcoming.length]);
 
     return (
         <LinearGradient
-            colors={['#ffeef8', '#fff0f5', '#ffe6f0']}
+            colors={DASHBOARD_GRADIENT}
             locations={[0, 0.5, 1]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -250,7 +164,7 @@ export default function DashboardScreen() {
                             Dashboard
                         </Text>
                         <Text variant="bodyMedium" style={styles.subtitle}>
-                            Hej {user?.name || user?.username || 'igen'} — her er dine kommende og
+                            Hej {user?.first_name || user?.username || 'igen'} — her er dine kommende og
                             afsluttede bookinger.
                         </Text>
 
@@ -260,7 +174,7 @@ export default function DashboardScreen() {
                                     Kommende
                                 </Text>
                                 <Text variant="headlineSmall" style={styles.summaryValue}>
-                                    {upcomingBookings.length}
+                                    {upcoming.length}
                                 </Text>
                             </View>
 
@@ -269,7 +183,7 @@ export default function DashboardScreen() {
                                     Afsluttede
                                 </Text>
                                 <Text variant="headlineSmall" style={styles.summaryValue}>
-                                    {completedBookings.length}
+                                    {completed.length}
                                 </Text>
                             </View>
                         </View>
@@ -289,33 +203,33 @@ export default function DashboardScreen() {
                     </View>
                 ) : (
                     <>
-                        {renderSection(
-                            'Kommende bookinger',
-                            upcomingBookings.length,
-                            upcomingBookings,
-                            'upcoming',
-                            'Ingen kommende bookinger.'
-                        )}
-
-                        {renderSection(
-                            'Afsluttede bookinger',
-                            completedBookings.length,
-                            completedBookings,
-                            'completed',
-                            'Ingen afsluttede bookinger.'
-                        )}
+                        <BookingSection
+                            title="Kommende bookinger"
+                            count={upcoming.length}
+                            bookings={upcoming}
+                            status="upcoming"
+                            emptyText="Ingen kommende bookinger."
+                            formatDate={formatBookingDate}
+                        />
+                        <BookingSection
+                            title="Afsluttede bookinger"
+                            count={completed.length}
+                            bookings={completed}
+                            status="completed"
+                            emptyText="Ingen afsluttede bookinger."
+                            formatDate={formatBookingDate}
+                        />
                     </>
                 )}
             </ScrollView>
 
-            <Snackbar
+            <AppSnackbar
                 visible={!!message}
+                message={message?.text ?? ''}
+                type={message?.type ?? 'info'}
                 onDismiss={() => setMessage(null)}
                 duration={3500}
-                style={styles.errorSnackbar}
-            >
-                {message?.text ?? ''}
-            </Snackbar>
+            />
         </LinearGradient>
     );
 }

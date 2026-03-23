@@ -1,8 +1,5 @@
-import { BookingScreen } from '@/components/screens/BookingScreen';
-import { useAuth } from '@/context/AuthContext';
+import { SalonPickerScreen } from '@/components/booking/SalonPicker';
 
 export default function SharedBookingPage() {
-    const { loggedIn } = useAuth();
-
-    return <BookingScreen isLoggedIn={loggedIn} />;
+    return <SalonPickerScreen />;
 }

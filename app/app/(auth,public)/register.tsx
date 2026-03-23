@@ -5,6 +5,7 @@ import {useState} from 'react';
 import {router} from 'expo-router';
 import {useAuth} from '@/context/AuthContext';
 import {ApiError, AppConfigError} from '@/api/Auth';
+import {AppSnackbar} from '@/components/common/AppSnackbar';
 
 function getRegisterErrorMessage(error: unknown): string {
     if (error instanceof AppConfigError) {
@@ -100,7 +101,7 @@ export default function RegisterScreen() {
                                 value={username}
                                 onChangeText={setUsername}
                                 mode="outlined"
-                                autoCapitalize="none"
+                                autoCapitalize="sentences"
                                 style={styles.flex}
                             />
                             <TextInput
@@ -108,7 +109,8 @@ export default function RegisterScreen() {
                                 value={email}
                                 onChangeText={setEmail}
                                 mode="outlined"
-                                autoCapitalize="none"
+                                autoCapitalize="sentences"
+                                keyboardType="email-address"
                                 style={styles.flex}
                             />
                         </View>
@@ -119,7 +121,7 @@ export default function RegisterScreen() {
                                 value={name}
                                 onChangeText={setName}
                                 mode="outlined"
-                                autoCapitalize="none"
+                                autoCapitalize="words"
                                 style={styles.flex}
                             />
                             <TextInput
@@ -127,7 +129,7 @@ export default function RegisterScreen() {
                                 value={surname}
                                 onChangeText={setSurname}
                                 mode="outlined"
-                                autoCapitalize="none"
+                                autoCapitalize="words"
                                 style={styles.flex}
                             />
                         </View>
@@ -157,8 +159,6 @@ export default function RegisterScreen() {
                             />
                         </View>
 
-                        {error ? <HelperText type="error">{error}</HelperText> : null}
-
                         <Button
                             mode="contained"
                             onPress={handleRegister}
@@ -186,6 +186,12 @@ export default function RegisterScreen() {
                     </View>
                 </View>
             </KeyboardAvoidingView>
+            <AppSnackbar
+                visible={!!error}
+                message={error}
+                type="error"
+                onDismiss={() => setError('')}
+            />
         </LinearGradient>
     );
 }

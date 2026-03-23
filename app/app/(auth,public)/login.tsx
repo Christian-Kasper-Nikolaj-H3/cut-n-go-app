@@ -5,6 +5,7 @@ import {router} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useAuth} from '@/context/AuthContext';
 import {ApiError, AppConfigError} from '@/api/Auth';
+import {AppSnackbar} from '@/components/common/AppSnackbar';
 
 function getLoginErrorMessage(error: unknown): string {
     if (error instanceof AppConfigError) {
@@ -107,8 +108,6 @@ export default function LoginScreen() {
                                 }
                             />
 
-                            {error ? <HelperText type="error">{error}</HelperText> : null}
-
                             <Button
                                 mode="contained"
                                 onPress={handleLogin}
@@ -137,6 +136,12 @@ export default function LoginScreen() {
                     </View>
                 </KeyboardAvoidingView>
             </LinearGradient>
+            <AppSnackbar
+                visible={!!error}
+                message={error}
+                type="error"
+                onDismiss={() => setError('')}
+            />
         </View>
     );
 }
