@@ -10,6 +10,7 @@ import { initializeDatabase } from './models/Index.js';
 import authRoutes from './routes/auth/Auth.js';
 import userRoutes from './routes/api/User.js';
 import bookingRoutes from './routes/api/Bookings.js';
+import salonRoutes from './routes/api/Salons.js';
 
 const app = express();
 await initializeDatabase();
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/api/salon', salonRoutes);
 
 const server = app.listen(serverConfig.port, serverConfig.host, () => {
     console.log(`Server listening on ${serverConfig.host}:${serverConfig.port}`);
