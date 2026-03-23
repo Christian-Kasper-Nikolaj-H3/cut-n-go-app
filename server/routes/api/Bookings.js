@@ -7,6 +7,10 @@ import { handleValidationErrors } from "../../middlewares/Validation.js";
 
 import Bookings from "../../models/Bookings.js";
 import BookingInformation from "../../models/BookingInformation.js";
+import Users from "../../models/Users.js";
+import Employees from "../../models/Employees.js";
+import UserInformation from "../../models/UserInformation.js";
+import Salon from "../../models/Salon.js";
 
 const router = Router();
 
@@ -67,7 +71,35 @@ router.post('/new', authenticateToken, ...newBookingValidation, handleValidation
 
 router.get('/all', async (req, res) => {
     try {
-        const bookings = await Bookings.findAll({});
+        const bookings = await Bookings.findAll({
+            attributes: ['id', 'salon_id', 'date'],
+            include: [
+                {
+                    model: Employees,
+                    as: 'employee',
+                    attributes: ['id'],
+                    include: [
+                        {
+                            model: Users,
+                            as: 'user',
+                            attributes: ['id'],
+                            include: [
+                                {
+                                    model: UserInformation,
+                                    as: 'information',
+                                    attributes: ['first_name', 'last_name']
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    model: Salon,
+                    as: 'salon',
+                    attributes: ['name', 'address', 'city', 'phone', 'email']
+                }
+            ]
+        });
 
         return res.status(200).json({
             success: true,
