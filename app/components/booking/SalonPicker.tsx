@@ -1,36 +1,16 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Card, Chip, Text} from 'react-native-paper';
 import {LinearGradient} from 'expo-linear-gradient';
-import {getAllSalons, type Salon} from '@/api/Salon';
+import {useSalon} from '@/context/SalonContext';
+import {type Salon} from '@/api/Salon';
 
 type SalonPickerProps = {
     onSelectSalon: (salon: Salon) => void;
 };
 
 export function SalonPicker({onSelectSalon}: SalonPickerProps) {
-    const [salons, setSalons] = useState<Salon[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const loadSalons = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const response = await getAllSalons();
-            setSalons(response.data.salons ?? []);
-        } catch (err) {
-            setSalons([]);
-            setError(err instanceof Error ? err.message : 'Kunne ikke hente saloner');
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        void loadSalons();
-    }, [loadSalons]);
+    const {salons} = useSalon();
 
     const salonCountLabel = useMemo(() => {
         const count = salons.length;
@@ -55,29 +35,7 @@ export function SalonPicker({onSelectSalon}: SalonPickerProps) {
                     </Chip>
                 </View>
 
-                {isLoading ? (
-                    <Card style={styles.messageCard}>
-                        <Card.Content>
-                            <Text variant="bodyMedium" style={styles.messageText}>
-                                Henter saloner...
-                            </Text>
-                        </Card.Content>
-                    </Card>
-                ) : error ? (
-                    <Card style={styles.messageCard}>
-                        <Card.Content style={styles.errorContent}>
-                            <Text variant="titleMedium" style={styles.errorTitle}>
-                                Noget gik galt
-                            </Text>
-                            <Text variant="bodyMedium" style={styles.messageText}>
-                                {error}
-                            </Text>
-                            <Button mode="contained" onPress={() => void loadSalons()} style={styles.retryButton}>
-                                Prøv igen
-                            </Button>
-                        </Card.Content>
-                    </Card>
-                ) : salons.length === 0 ? (
+                {salons.length === 0 ? (
                     <Card style={styles.messageCard}>
                         <Card.Content>
                             <Text variant="bodyMedium" style={styles.messageText}>

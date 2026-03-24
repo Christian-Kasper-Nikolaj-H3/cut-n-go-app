@@ -213,7 +213,6 @@ router.post('/new', authenticateToken, ...employeeValidation, handleValidationEr
         });
     }
 });
-});
 
 router.put('/update/:id', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
     try {
