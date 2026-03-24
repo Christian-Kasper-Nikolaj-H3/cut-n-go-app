@@ -129,6 +129,6 @@ router.delete('/delete/:id', authenticateToken, ...salonValidation, handleValida
             message: "Internal server error"
         });
     }
-})
+});
 
 export default router;

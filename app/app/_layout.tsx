@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { UserProvider } from '@/context/UserContext';
 import { AdminProvider } from '@/context/AdminContext';
+import { SalonProvider } from '@/context/SalonContext';
 
 const appTheme = {
     ...MD3LightTheme,
@@ -51,7 +52,9 @@ export default function RootLayout() {
                 <AuthProvider>
                     <UserProvider>
                         <AdminProvider>
-                            <RootNavigator />
+                            <SalonProvider>
+                                <RootNavigator />
+                            </SalonProvider>
                         </AdminProvider>
                     </UserProvider>
                 </AuthProvider>

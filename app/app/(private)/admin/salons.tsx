@@ -1,6 +1,6 @@
 import {useMemo, useState} from 'react';
 import {FlatList, ScrollView, StyleSheet, View} from 'react-native';
-import { useAdmin } from '@/context/AdminContext';
+import { useSalon } from '@/context/SalonContext';
 import {Button, Card, Chip, IconButton, Portal, Snackbar, Text} from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import {SalonActionModal} from '@/components/admin/SalonActionModal';
@@ -9,7 +9,7 @@ import {SalonFormFields, type SalonFormState} from '@/components/admin/SalonForm
 type ActiveModal = 'create' | 'edit' | 'delete' | null;
 
 export default function AdminSalonsScreen() {
-    const { createSalon, updateSalon, deleteSalon, salons } = useAdmin();
+    const { createSalon, updateSalon, deleteSalon, salons } = useSalon();
     const [form, setForm] = useState<SalonFormState>({
         name: '',
         address: '',
