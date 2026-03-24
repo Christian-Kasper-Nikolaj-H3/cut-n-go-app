@@ -119,7 +119,14 @@ router.get('/all', async (req, res) => {
 });
 
 router.get('/available-times', async (req, res) => {
-    const { salon_id, date } = req.body;
+    const { salon_id, employee_id, date } = req.query;
+
+    if (!salon_id || !employee_id || !date) {
+        return res.status(400).json({
+            success: false,
+            message: 'Missing required parameters'
+        });
+    }
 
     try {
         const startOfDay = new Date(date);
@@ -131,6 +138,7 @@ router.get('/available-times', async (req, res) => {
         const bookings = await Bookings.findAll({
             where: {
                 salon_id: salon_id,
+                employee_id: employee_id,
                 date: {
                     [Op.gte]: startOfDay,
                     [Op.lte]: endOfDay

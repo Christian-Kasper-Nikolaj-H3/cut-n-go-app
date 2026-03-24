@@ -95,6 +95,10 @@ export async function updateEmployee(id: number, payload: UpdateEmployeePayload)
     return putJson<EmployeeResponse, UpdateEmployeePayload>(`/api/employee/update/${id}`, payload);
 }
 
+export async function getEmployeesBySalonId(salonId: number): Promise<EmployeesResponse> {
+    return await getJson<EmployeesResponse>(`/api/employee/all/${salonId}`);
+}
+
 export async function deleteEmployee(id: number): Promise<DeleteEmployeeResponse> {
     return deleteJson<DeleteEmployeeResponse>(`/api/employee/delete/${id}`);
 }

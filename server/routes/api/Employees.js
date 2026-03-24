@@ -17,6 +17,7 @@ const employeeValidation = [
 ];
 
 // employee/all
+// employee/all/:salonId
 // employee/new
 
 router.get('/roles', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
@@ -45,6 +46,56 @@ router.get('/roles', authenticateToken, ...employeeValidation, handleValidationE
 router.get('/all', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
     try {
         const employees = await Employee.findAll({
+            include: [
+                {
+                    model: Users,
+                    as: 'user',
+                    attributes: ['id', 'username'],
+                    include: [
+                        {
+                            model: UserInformation,
+                            as: 'information',
+                            attributes: ['first_name', 'last_name', 'phone', 'email']
+                        }
+                    ]
+                },
+                {
+                    model: Salon,
+                    as: 'salon',
+                    attributes: ['id', 'name', 'address', 'city', 'phone', 'email']
+                },
+                {
+                    model: EmployeeRoles,
+                    as: 'role',
+                    attributes: ['name']
+                }
+            ]
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Employees retrieved successfully",
+            data:{
+                employees
+            }
+        });
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+});
+
+router.get('/all/:salonId', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+    try {
+        const { salonId } = req.params;
+        const employees = await Employee.findAll({
+            where: {
+                salon_id: salonId,
+            },
             include: [
                 {
                     model: Users,
@@ -161,6 +212,7 @@ router.post('/new', authenticateToken, ...employeeValidation, handleValidationEr
             message: "Internal server error"
         });
     }
+});
 });
 
 router.put('/update/:id', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {

@@ -2,40 +2,43 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Card, Chip, Text} from 'react-native-paper';
 import {LinearGradient} from 'expo-linear-gradient';
-import {getAllSalons, type Salon} from '@/api/Salon';
+import {getEmployeesBySalonId, type Employee} from '@/api/Employee';
 
-type SalonPickerProps = {
-    onSelectSalon: (salon: Salon) => void;
+type EmployeePickerProps = {
+    salonId: number;
+    salonName?: string;
+    onBack: () => void;
+    onSelectEmployee: (employee: Employee) => void;
 };
 
-export function SalonPicker({onSelectSalon}: SalonPickerProps) {
-    const [salons, setSalons] = useState<Salon[]>([]);
+export function EmployeePicker({salonId, salonName, onBack, onSelectEmployee}: EmployeePickerProps) {
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const loadSalons = useCallback(async () => {
+    const loadEmployees = useCallback(async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const response = await getAllSalons();
-            setSalons(response.data.salons ?? []);
+            const response = await getEmployeesBySalonId(salonId);
+            setEmployees(response.data.employees ?? []);
         } catch (err) {
-            setSalons([]);
-            setError(err instanceof Error ? err.message : 'Kunne ikke hente saloner');
+            setEmployees([]);
+            setError(err instanceof Error ? err.message : 'Kunne ikke hente medarbejdere');
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [salonId]);
 
     useEffect(() => {
-        void loadSalons();
-    }, [loadSalons]);
+        void loadEmployees();
+    }, [loadEmployees]);
 
-    const salonCountLabel = useMemo(() => {
-        const count = salons.length;
-        return `${count} salon${count === 1 ? '' : 'er'}`;
-    }, [salons.length]);
+    const employeeCountLabel = useMemo(() => {
+        const count = employees.length;
+        return `${count} medarbejder${count === 1 ? '' : 'e'}`;
+    }, [employees.length]);
 
     return (
         <LinearGradient
@@ -47,19 +50,29 @@ export function SalonPicker({onSelectSalon}: SalonPickerProps) {
         >
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.header}>
-                    <Text variant="headlineMedium" style={styles.title}>
-                        Vælg salon
-                    </Text>
+                    <View style={styles.headerText}>
+                        <Text variant="headlineMedium" style={styles.title}>
+                            Vælg medarbejder
+                        </Text>
+                        <Text variant="bodyMedium" style={styles.subtitle}>
+                            {salonName ? `Salon: ${salonName}` : 'Vælg en medarbejder til din booking'}
+                        </Text>
+                    </View>
+
                     <Chip compact style={styles.countChip} textStyle={styles.countChipText}>
-                        {salonCountLabel}
+                        {employeeCountLabel}
                     </Chip>
                 </View>
+
+                <Button mode="text" onPress={onBack} style={styles.backButton}>
+                    Tilbage
+                </Button>
 
                 {isLoading ? (
                     <Card style={styles.messageCard}>
                         <Card.Content>
                             <Text variant="bodyMedium" style={styles.messageText}>
-                                Henter saloner...
+                                Henter medarbejdere...
                             </Text>
                         </Card.Content>
                     </Card>
@@ -72,45 +85,49 @@ export function SalonPicker({onSelectSalon}: SalonPickerProps) {
                             <Text variant="bodyMedium" style={styles.messageText}>
                                 {error}
                             </Text>
-                            <Button mode="contained" onPress={() => void loadSalons()} style={styles.retryButton}>
+                            <Button mode="contained" onPress={() => void loadEmployees()} style={styles.retryButton}>
                                 Prøv igen
                             </Button>
                         </Card.Content>
                     </Card>
-                ) : salons.length === 0 ? (
+                ) : employees.length === 0 ? (
                     <Card style={styles.messageCard}>
                         <Card.Content>
                             <Text variant="bodyMedium" style={styles.messageText}>
-                                Ingen saloner er oprettet endnu.
+                                Ingen medarbejdere er knyttet til denne salon endnu.
                             </Text>
                         </Card.Content>
                     </Card>
                 ) : (
                     <View style={styles.list}>
-                        {salons.map((salon) => {
-                            const location = `${salon.address}, ${salon.city}`;
+                        {employees.map((employee) => {
+                            const info = employee.user.information;
+                            const displayName = `${info.first_name} ${info.last_name}`.trim();
+                            const contactLine = `${info.phone} · ${info.email}`;
 
                             return (
-                                <Card key={salon.id} style={styles.card}>
+                                <Card key={employee.id} style={styles.card}>
                                     <Card.Content style={styles.cardContent}>
                                         <Text variant="titleLarge" style={styles.cardTitle}>
-                                            {salon.name}
+                                            {displayName}
                                         </Text>
-                                        <Text variant="bodyMedium" style={styles.cardLocation}>
-                                            {location}
+
+                                        <Text variant="bodyMedium" style={styles.cardInfo}>
+                                            @{employee.user.username}
                                         </Text>
-                                        <Text variant="bodyMedium" style={styles.cardDescription}>
-                                            {salon.phone} · {salon.email}
+
+                                        <Text variant="bodyMedium" style={styles.cardInfo}>
+                                            {contactLine}
                                         </Text>
 
                                         <Button
                                             mode="contained"
-                                            onPress={() => onSelectSalon(salon)}
+                                            onPress={() => onSelectEmployee(employee)}
                                             style={styles.selectButton}
                                             buttonColor="#be185d"
                                             textColor="#ffffff"
                                         >
-                                            Vælg salon
+                                            Vælg medarbejder
                                         </Button>
                                     </Card.Content>
                                 </Card>
@@ -139,10 +156,16 @@ const styles = StyleSheet.create({
         gap: 8,
         paddingTop: 8,
     },
-    title: {
+    headerText: {
         flex: 1,
+        gap: 4,
+    },
+    title: {
         color: '#9d174d',
         fontWeight: '800',
+    },
+    subtitle: {
+        color: '#6b7280',
     },
     countChip: {
         backgroundColor: '#fdf2f8',
@@ -151,6 +174,10 @@ const styles = StyleSheet.create({
     countChipText: {
         color: '#be185d',
         fontWeight: '700',
+    },
+    backButton: {
+        alignSelf: 'flex-start',
+        marginLeft: -8,
     },
     list: {
         gap: 14,
@@ -171,13 +198,8 @@ const styles = StyleSheet.create({
         color: '#be185d',
         fontWeight: '700',
     },
-    cardLocation: {
-        color: '#7c3aed',
-        fontWeight: '600',
-    },
-    cardDescription: {
+    cardInfo: {
         color: '#52525b',
-        lineHeight: 20,
     },
     selectButton: {
         marginTop: 8,

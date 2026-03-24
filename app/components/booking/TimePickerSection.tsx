@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Chip, HelperText, Text } from 'react-native-paper';
-import { StyleSheet, View } from 'react-native';
-import { getAvailableBookingTimes } from '@/services/api';
+import {useEffect, useState} from 'react';
+import {ActivityIndicator, Chip, HelperText, Text} from 'react-native-paper';
+import {StyleSheet, View} from 'react-native';
+import {getAvailableTimes} from "@/api/Booking";
 
 type TimePickerSectionProps = {
     selectedSalon: string;
+    selectedEmployee: string;
     selectedDate: Date | null;
     selectedTime: string;
     onSelectTime: (time: string) => void;
@@ -12,44 +13,46 @@ type TimePickerSectionProps = {
 };
 
 export function TimePickerSection({
-                                      selectedSalon,
-                                      selectedDate,
-                                      selectedTime,
-                                      onSelectTime,
-                                      onChange,
-                                  }: TimePickerSectionProps) {
+    selectedSalon,
+    selectedEmployee,
+    selectedDate,
+    selectedTime,
+    onSelectTime,
+    onChange,
+}: TimePickerSectionProps) {
     const [availableTimes, setAvailableTimes] = useState<string[]>([]);
     const [isLoadingTimes, setIsLoadingTimes] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        async function loadAvailableTimes() {
-            if (!selectedSalon || !selectedDate) {
-                setAvailableTimes([]);
-                onSelectTime('');
-                return;
-            }
+        if (!selectedSalon || !selectedEmployee || !selectedDate) {
+            setAvailableTimes([]);
+            return;
+        }
 
+        const loadAvailableTimes = async () => {
             setIsLoadingTimes(true);
-            onSelectTime('');
+            setError(null);
 
             try {
-                const formattedApiDate = selectedDate.toLocaleDateString('dk-DK');
-                const data = await getAvailableBookingTimes(selectedSalon, formattedApiDate);
+                const response = await getAvailableTimes({
+                    salon_id: selectedSalon,
+                    employee_id: selectedEmployee,
+                    date: selectedDate.toLocaleDateString('da-DK'),
+                });
 
-                if (Array.isArray(data.availableTimes)) {
-                    setAvailableTimes(data.availableTimes);
-                } else {
-                    setAvailableTimes([]);
-                }
-            } catch {
+                // @ts-ignore
+                setAvailableTimes(response.data.availableTimes ?? []);
+            } catch (err) {
                 setAvailableTimes([]);
+                setError(err instanceof Error ? err.message : 'Kunne ikke hente ledige tider');
             } finally {
                 setIsLoadingTimes(false);
             }
-        }
+        };
 
         void loadAvailableTimes();
-    }, [selectedSalon, selectedDate, onSelectTime]);
+    }, [selectedSalon, selectedEmployee, selectedDate]);
 
     return (
         <View style={styles.section}>
@@ -57,9 +60,9 @@ export function TimePickerSection({
                 Tidspunkt *
             </Text>
 
-            {!selectedSalon || !selectedDate ? (
+            {!selectedSalon || !selectedEmployee || !selectedDate ? (
                 <HelperText type="info" visible style={styles.helperText}>
-                    Vælg først salon og dato.
+                    Vælg først salon, medarbejder og dato.
                 </HelperText>
             ) : isLoadingTimes ? (
                 <View style={styles.loadingContainer}>
@@ -68,32 +71,36 @@ export function TimePickerSection({
                         Henter ledige tider...
                     </Text>
                 </View>
+            ) : error ? (
+                <HelperText type="error" visible style={styles.helperText}>
+                    {error}
+                </HelperText>
             ) : availableTimes.length === 0 ? (
                 <HelperText type="error" visible style={styles.helperText}>
                     Ingen ledige tider for den valgte dato.
                 </HelperText>
             ) : (
                 <View style={styles.timeGrid}>
-                    {availableTimes.map((time) => (
+                    {availableTimes.map((timeValue) => (
                         <Chip
-                            key={time}
-                            selected={selectedTime === time}
+                            key={timeValue}
+                            selected={selectedTime === timeValue}
                             onPress={() => {
-                                onSelectTime(time);
+                                onSelectTime(timeValue);
                                 onChange?.();
                             }}
                             mode="outlined"
                             style={[
                                 styles.timeChip,
-                                selectedTime === time && styles.timeChipSelected,
+                                selectedTime === timeValue && styles.timeChipSelected,
                             ]}
                             textStyle={[
                                 styles.timeChipText,
-                                selectedTime === time && styles.timeChipTextSelected,
+                                selectedTime === timeValue && styles.timeChipTextSelected,
                             ]}
                             selectedColor="#ffffff"
                         >
-                            {time}
+                            {timeValue}
                         </Chip>
                     ))}
                 </View>
