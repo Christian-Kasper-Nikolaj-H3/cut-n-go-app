@@ -8,6 +8,7 @@ import Bookings from "./Bookings.js";
 import BookingInformation from "./BookingInformation.js";
 import Treatments from "./Treatments.js";
 import TreatmentCategories from "./TreatmentCategories.js";
+import BookingTreatments from "./BookingTreatments.js";
 
 export default function setupAssociations() {
     UserRoles.hasMany(Users, { foreignKey: "role_id", as: "users" });
@@ -39,4 +40,23 @@ export default function setupAssociations() {
 
     TreatmentCategories.hasMany(Treatments, { foreignKey: "category_id", as: "treatments" });
     Treatments.belongsTo(TreatmentCategories, { foreignKey: "category_id", as: "category" });
+
+    Bookings.hasMany(BookingTreatments, { foreignKey: "booking_id", as: "bookingTreatments" });
+    BookingTreatments.belongsTo(Bookings, { foreignKey: "booking_id", as: "booking" });
+
+    Treatments.hasMany(BookingTreatments, { foreignKey: "treatment_id", as: "bookingTreatments" });
+    BookingTreatments.belongsTo(Treatments, { foreignKey: "treatment_id", as: "treatment" });
+
+    Bookings.belongsToMany(Treatments, {
+        through: BookingTreatments,
+        foreignKey: "booking_id",
+        otherKey: "treatment_id",
+        as: "treatments"
+    });
+    Treatments.belongsToMany(Bookings, {
+        through: BookingTreatments,
+        foreignKey: "treatment_id",
+        otherKey: "booking_id",
+        as: "bookings"
+    });
 }

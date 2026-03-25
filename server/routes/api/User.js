@@ -12,6 +12,7 @@ import Bookings from "../../models/Bookings.js";
 import Salon from "../../models/Salon.js";
 import Employees from "../../models/Employees.js";
 import BookingInformation from "../../models/BookingInformation.js";
+import Treatments from "../../models/Treatments.js";
 
 const router = Router();
 
@@ -65,6 +66,12 @@ router.get('/bookings', authenticateToken, ...profileValidation, handleValidatio
                     model: Salon,
                     as: 'salon',
                     attributes: ['name', 'address', 'city', 'phone', 'email']
+                },
+                {
+                    model: Treatments,
+                    as: 'treatments',
+                    through: { attributes: [] },
+                    attributes: ['id', 'name', 'price']
                 }
             ],
             order: [['date', 'DESC']]

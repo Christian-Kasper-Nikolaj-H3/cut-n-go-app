@@ -7,10 +7,12 @@ import { handleValidationErrors } from "../../middlewares/Validation.js";
 
 import Bookings from "../../models/Bookings.js";
 import BookingInformation from "../../models/BookingInformation.js";
+import BookingTreatments from "../../models/BookingTreatments.js";
 import Users from "../../models/Users.js";
 import Employees from "../../models/Employees.js";
 import UserInformation from "../../models/UserInformation.js";
 import Salon from "../../models/Salon.js";
+import Treatments from "../../models/Treatments.js";
 
 const router = Router();
 
@@ -43,7 +45,14 @@ const newBookingValidation = [
     body('email')
         .trim()
         .notEmpty().withMessage('email is required')
-        .isEmail().withMessage('email must be valid')
+        .isEmail().withMessage('email must be valid'),
+    body('treatment_ids')
+        .optional()
+        .isArray({ min: 1 }).withMessage('treatment_ids must be a non-empty array'),
+    body('treatment_ids.*')
+        .optional()
+        .isInt({ min: 1 }).withMessage('each treatment id must be a positive integer')
+        .toInt()
 ];
 
 const availableTimesValidation = [
@@ -59,7 +68,7 @@ const availableTimesValidation = [
 
 router.post('/new', authenticateToken, ...newBookingValidation, handleValidationErrors, async (req, res) => {
     try {
-        const { salon_id, employee_id, date, first_name, last_name, phone, email } = req.body;
+        const { salon_id, employee_id, date, first_name, last_name, phone, email, treatment_ids } = req.body;
         const { userId } = req.user;
 
         const booking = await Bookings.create({
@@ -77,12 +86,40 @@ router.post('/new', authenticateToken, ...newBookingValidation, handleValidation
             email: email
         });
 
+        if (Array.isArray(treatment_ids) && treatment_ids.length > 0) {
+            const uniqueTreatmentIds = [...new Set(treatment_ids)];
+
+            const existingTreatments = await Treatments.findAll({
+                where: { id: uniqueTreatmentIds },
+                attributes: ['id']
+            });
+            if (existingTreatments.length !== uniqueTreatmentIds.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: "One or more treatments were not found"
+                });
+            }
+
+            await BookingTreatments.bulkCreate(
+                uniqueTreatmentIds.map((treatmentId) => ({
+                    booking_id: booking.id,
+                    treatment_id: treatmentId
+                }))
+            );
+        }
+
         await booking.reload({
             include: [
                 {
                     model: BookingInformation,
                     as: 'information',
                     attributes: ['first_name', 'last_name', 'phone', 'email']
+                },
+                {
+                    model: Treatments,
+                    as: 'treatments',
+                    through: { attributes: [] },
+                    attributes: ['id', 'name', 'price']
                 }
             ]
         });
@@ -132,6 +169,12 @@ router.get('/all', handleValidationErrors, async (req, res) => {
                     model: Salon,
                     as: 'salon',
                     attributes: ['name', 'address', 'city', 'phone', 'email']
+                },
+                {
+                    model: Treatments,
+                    as: 'treatments',
+                    through: { attributes: [] },
+                    attributes: ['id', 'name', 'price']
                 }
             ]
         });
