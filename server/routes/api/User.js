@@ -15,7 +15,12 @@ import Employees from "../../models/Employees.js";
 const router = Router();
 
 const profileValidation = [
-
+    body().custom((_, { req }) => {
+        if (!req.user?.userId || !Number.isInteger(req.user.userId)) {
+            throw new Error('Invalid token payload');
+        }
+        return true;
+    })
 ];
 
 router.get('/bookings', authenticateToken, ...profileValidation, handleValidationErrors, async (req, res) => {

@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { UserProvider } from '@/context/UserContext';
 import { EmployeeProvider } from '@/context/EmployeeContext';
 import { SalonProvider } from '@/context/SalonContext';
+import { TreatmentProvider } from '@/context/TreatmentContext';
 
 const appTheme = {
     ...MD3LightTheme,
@@ -53,7 +54,9 @@ export default function RootLayout() {
                     <UserProvider>
                         <EmployeeProvider>
                             <SalonProvider>
-                                <RootNavigator />
+                                <TreatmentProvider>
+                                    <RootNavigator />
+                                </TreatmentProvider>
                             </SalonProvider>
                         </EmployeeProvider>
                     </UserProvider>

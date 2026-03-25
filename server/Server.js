@@ -12,6 +12,7 @@ import userRoutes from './routes/api/User.js';
 import bookingRoutes from './routes/api/Bookings.js';
 import salonRoutes from './routes/api/Salons.js';
 import employeeRoutes from './routes/api/Employees.js';
+import treatmentRoutes from './routes/api/Treatments.js';
 
 const app = express();
 await initializeDatabase();
@@ -26,6 +27,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/salon', salonRoutes);
 app.use('/api/employee', employeeRoutes);
+app.use('/api/treatment', treatmentRoutes);
 
 const server = app.listen(serverConfig.port, serverConfig.host, () => {
     console.log(`Server listening on ${serverConfig.host}:${serverConfig.port}`);

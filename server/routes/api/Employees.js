@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 import { authenticateToken } from "../../middlewares/Auth.js"
 import { handleValidationErrors } from "../../middlewares/Validation.js";
@@ -12,15 +12,58 @@ import EmployeeRoles from "../../models/EmployeeRoles.js";
 
 const router = Router();
 
-const employeeValidation = [
+const idParamValidation = [
+    param('id')
+        .isInt({ min: 1 }).withMessage('Employee id must be a positive integer')
+        .toInt()
+];
 
+const salonIdParamValidation = [
+    param('salonId')
+        .isInt({ min: 1 }).withMessage('Salon id must be a positive integer')
+        .toInt()
+];
+
+const createEmployeeValidation = [
+    body('role_id')
+        .isInt({ min: 1 }).withMessage('role_id must be a positive integer')
+        .toInt(),
+    body('salon_id')
+        .isInt({ min: 1 }).withMessage('salon_id must be a positive integer')
+        .toInt(),
+    body('username')
+        .trim()
+        .notEmpty().withMessage('username is required')
+        .isLength({ min: 3, max: 64 }).withMessage('username must be between 3 and 64 characters')
+];
+
+const updateEmployeeValidation = [
+    ...idParamValidation,
+    body('role_id')
+        .optional()
+        .isInt({ min: 1 }).withMessage('role_id must be a positive integer')
+        .toInt(),
+    body('salon_id')
+        .optional()
+        .isInt({ min: 1 }).withMessage('salon_id must be a positive integer')
+        .toInt(),
+    body('user_id')
+        .optional()
+        .isInt({ min: 1 }).withMessage('user_id must be a positive integer')
+        .toInt(),
+    body().custom((_, { req }) => {
+        if (req.body.role_id === undefined && req.body.salon_id === undefined && req.body.user_id === undefined) {
+            throw new Error('At least one of role_id, salon_id or user_id is required');
+        }
+        return true;
+    })
 ];
 
 // employee/all
 // employee/all/:salonId
 // employee/new
 
-router.get('/roles', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+router.get('/roles', authenticateToken, handleValidationErrors, async (req, res) => {
     try {
         const employeeRoles = await EmployeeRoles.findAll({
             attributes: ['id', 'name']
@@ -43,7 +86,7 @@ router.get('/roles', authenticateToken, ...employeeValidation, handleValidationE
     }
 });
 
-router.get('/all', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+router.get('/all', authenticateToken, handleValidationErrors, async (req, res) => {
     try {
         const employees = await Employee.findAll({
             include: [
@@ -89,7 +132,7 @@ router.get('/all', authenticateToken, ...employeeValidation, handleValidationErr
     }
 });
 
-router.get('/all/:salonId', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+router.get('/all/:salonId', authenticateToken, ...salonIdParamValidation, handleValidationErrors, async (req, res) => {
     try {
         const { salonId } = req.params;
         const employees = await Employee.findAll({
@@ -139,7 +182,7 @@ router.get('/all/:salonId', authenticateToken, ...employeeValidation, handleVali
     }
 });
 
-router.post('/new', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+router.post('/new', authenticateToken, ...createEmployeeValidation, handleValidationErrors, async (req, res) => {
     try {
         const { role_id, salon_id, username } = req.body;
 
@@ -214,7 +257,7 @@ router.post('/new', authenticateToken, ...employeeValidation, handleValidationEr
     }
 });
 
-router.put('/update/:id', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+router.put('/update/:id', authenticateToken, ...updateEmployeeValidation, handleValidationErrors, async (req, res) => {
     try {
         const { id } = req.params;
         const { role_id, salon_id, user_id } = req.body;
@@ -277,7 +320,7 @@ router.put('/update/:id', authenticateToken, ...employeeValidation, handleValida
     }
 });
 
-router.delete('/delete/:id', authenticateToken, ...employeeValidation, handleValidationErrors, async (req, res) => {
+router.delete('/delete/:id', authenticateToken, ...idParamValidation, handleValidationErrors, async (req, res) => {
     try {
         const { id } = req.params;
 

@@ -30,6 +30,14 @@ export default function AdminLayout() {
                     drawerLabel: 'Medarbejdere',
                 }}
             />
+
+            <Drawer.Screen
+                name="treatments"
+                options={{
+                    title: 'Behandlinger',
+                    drawerLabel: 'Behandlinger',
+                }}
+            />
         </Drawer>
     );
 }

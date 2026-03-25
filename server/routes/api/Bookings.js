@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 import { Op } from 'sequelize';
 
 import { authenticateToken } from "../../middlewares/Auth.js"
@@ -19,7 +19,42 @@ const router = Router();
 // booking/available-times
 
 const newBookingValidation = [
+    body('salon_id')
+        .isInt({ min: 1 }).withMessage('salon_id must be a positive integer')
+        .toInt(),
+    body('employee_id')
+        .isInt({ min: 1 }).withMessage('employee_id must be a positive integer')
+        .toInt(),
+    body('date')
+        .isISO8601().withMessage('date must be a valid ISO 8601 date')
+        .toDate(),
+    body('first_name')
+        .trim()
+        .notEmpty().withMessage('first_name is required')
+        .isLength({ min: 2, max: 100 }).withMessage('first_name must be between 2 and 100 characters'),
+    body('last_name')
+        .trim()
+        .notEmpty().withMessage('last_name is required')
+        .isLength({ min: 2, max: 100 }).withMessage('last_name must be between 2 and 100 characters'),
+    body('phone')
+        .trim()
+        .notEmpty().withMessage('phone is required')
+        .isLength({ min: 6, max: 32 }).withMessage('phone must be between 6 and 32 characters'),
+    body('email')
+        .trim()
+        .notEmpty().withMessage('email is required')
+        .isEmail().withMessage('email must be valid')
+];
 
+const availableTimesValidation = [
+    query('salon_id')
+        .isInt({ min: 1 }).withMessage('salon_id must be a positive integer')
+        .toInt(),
+    query('employee_id')
+        .isInt({ min: 1 }).withMessage('employee_id must be a positive integer')
+        .toInt(),
+    query('date')
+        .isISO8601().withMessage('date must be a valid ISO 8601 date')
 ];
 
 router.post('/new', authenticateToken, ...newBookingValidation, handleValidationErrors, async (req, res) => {
@@ -69,7 +104,7 @@ router.post('/new', authenticateToken, ...newBookingValidation, handleValidation
     }
 });
 
-router.get('/all', async (req, res) => {
+router.get('/all', handleValidationErrors, async (req, res) => {
     try {
         const bookings = await Bookings.findAll({
             attributes: ['id', 'salon_id', 'date'],
@@ -118,15 +153,8 @@ router.get('/all', async (req, res) => {
     }
 });
 
-router.get('/available-times', async (req, res) => {
+router.get('/available-times', ...availableTimesValidation, handleValidationErrors, async (req, res) => {
     const { salon_id, employee_id, date } = req.query;
-
-    if (!salon_id || !employee_id || !date) {
-        return res.status(400).json({
-            success: false,
-            message: 'Missing required parameters'
-        });
-    }
 
     try {
         const startOfDay = new Date(date);

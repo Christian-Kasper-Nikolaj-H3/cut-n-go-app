@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 import { authenticateToken } from "../../middlewares/Auth.js"
 import { handleValidationErrors } from "../../middlewares/Validation.js";
@@ -8,11 +8,36 @@ import Salon from "../../models/Salon.js";
 
 const router = Router();
 
-const salonValidation = [
-
+const salonBaseValidation = [
+    body('name')
+        .trim()
+        .notEmpty().withMessage('name is required')
+        .isLength({ min: 2, max: 120 }).withMessage('name must be between 2 and 120 characters'),
+    body('address')
+        .trim()
+        .notEmpty().withMessage('address is required')
+        .isLength({ min: 2, max: 255 }).withMessage('address must be between 2 and 255 characters'),
+    body('city')
+        .trim()
+        .notEmpty().withMessage('city is required')
+        .isLength({ min: 2, max: 100 }).withMessage('city must be between 2 and 100 characters'),
+    body('phone')
+        .trim()
+        .notEmpty().withMessage('phone is required')
+        .isLength({ min: 6, max: 32 }).withMessage('phone must be between 6 and 32 characters'),
+    body('email')
+        .trim()
+        .notEmpty().withMessage('email is required')
+        .isEmail().withMessage('email must be valid')
 ];
 
-router.get('/all', authenticateToken, ...salonValidation, handleValidationErrors, async (req, res) => {
+const salonIdValidation = [
+    param('id')
+        .isInt({ min: 1 }).withMessage('Salon id must be a positive integer')
+        .toInt()
+];
+
+router.get('/all', authenticateToken, handleValidationErrors, async (req, res) => {
     try {
         const salons = await Salon.findAll({});
 
@@ -33,7 +58,7 @@ router.get('/all', authenticateToken, ...salonValidation, handleValidationErrors
     }
 });
 
-router.post('/new', authenticateToken, ...salonValidation, handleValidationErrors, async (req, res) => {
+router.post('/new', authenticateToken, ...salonBaseValidation, handleValidationErrors, async (req, res) => {
     try {
         const { userId } = req.user;
         const { name, address, city, phone, email } = req.body;
@@ -63,7 +88,7 @@ router.post('/new', authenticateToken, ...salonValidation, handleValidationError
     }
 });
 
-router.put('/update/:id', authenticateToken, ...salonValidation, handleValidationErrors, async (req, res) => {
+router.put('/update/:id', authenticateToken, ...salonIdValidation, ...salonBaseValidation, handleValidationErrors, async (req, res) => {
     try {
         const { userId } = req.user;
         const { id } = req.params;
@@ -102,7 +127,7 @@ router.put('/update/:id', authenticateToken, ...salonValidation, handleValidatio
     }
 });
 
-router.delete('/delete/:id', authenticateToken, ...salonValidation, handleValidationErrors, async (req, res) => {
+router.delete('/delete/:id', authenticateToken, ...salonIdValidation, handleValidationErrors, async (req, res) => {
     try {
         const { userId } = req.user;
         const { id } = req.params;
