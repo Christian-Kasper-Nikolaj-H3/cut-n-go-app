@@ -36,6 +36,7 @@ router.get('/bookings', authenticateToken, ...profileValidation, handleValidatio
         }
 
         const bookings = await Bookings.findAll({
+            attributes: ['id', 'date', 'completed_at'],
             include: [
                 {
                     model: BookingInformation,

@@ -71,6 +71,18 @@ const employeeProfileValidation = [
     })
 ];
 
+const completeBookingValidation = [
+    param('bookingId')
+        .isInt({ min: 1 }).withMessage('bookingId must be a positive integer')
+        .toInt(),
+    body().custom((_, { req }) => {
+        if (!req.user?.userId || !Number.isInteger(req.user.userId)) {
+            throw new Error('Invalid token payload');
+        }
+        return true;
+    })
+];
+
 // employee/all
 // employee/all/:salonId
 // employee/new
@@ -86,6 +98,65 @@ router.get('/roles', authenticateToken, handleValidationErrors, async (req, res)
             message: "Employee roles retrieved successfully",
             data:{
                 roles: employeeRoles
+            }
+        });
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+});
+
+router.put('/bookings/:bookingId/complete', authenticateToken, ...completeBookingValidation, handleValidationErrors, async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const { bookingId } = req.params;
+
+        const employee = await Employee.findOne({
+            where: { user_id: userId },
+            attributes: ['id']
+        });
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "Employee profile not found"
+            });
+        }
+
+        const booking = await Bookings.findOne({
+            where: {
+                id: bookingId,
+                employee_id: employee.id
+            }
+        });
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        if (booking.completed_at) {
+            return res.status(400).json({
+                success: false,
+                message: "Booking is already completed"
+            });
+        }
+
+        booking.completed_at = new Date();
+        await booking.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Booking marked as completed",
+            data: {
+                booking: {
+                    id: booking.id,
+                    completed_at: booking.completed_at
+                }
             }
         });
     } catch (err) {
@@ -139,7 +210,7 @@ router.get('/me', authenticateToken, ...employeeProfileValidation, handleValidat
 
         const bookings = await Bookings.findAll({
             where: { employee_id: employee.id },
-            attributes: ['id', 'date'],
+            attributes: ['id', 'date', 'completed_at'],
             include: [
                 {
                     model: Salon,
@@ -149,7 +220,21 @@ router.get('/me', authenticateToken, ...employeeProfileValidation, handleValidat
                 {
                     model: BookingInformation,
                     as: 'information',
-                    attributes: ['first_name', 'last_name', 'phone', 'email']
+                    attributes: ['first_name', 'last_name', 'phone', 'email'],
+                    include: [
+                        {
+                            model: Users,
+                            as: 'user',
+                            attributes: ['id'],
+                            include: [
+                                {
+                                    model: UserInformation,
+                                    as: 'information',
+                                    attributes: ['first_name', 'last_name']
+                                }
+                            ]
+                        }
+                    ]
                 },
                 {
                     model: Treatments,

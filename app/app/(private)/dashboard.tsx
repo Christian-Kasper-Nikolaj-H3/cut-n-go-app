@@ -14,9 +14,14 @@ export default function DashboardScreen() {
     useEffect(() => {
         function filterBookings() {
             if(!userBookings) return;
+            const now = new Date();
 
-            setUpcoming(userBookings.filter(booking => new Date(booking.date) > new Date()));
-            setCompleted(userBookings.filter(booking => new Date(booking.date) < new Date()));
+            setUpcoming(
+                userBookings.filter((booking) => !booking.completed_at && new Date(booking.date) > now)
+            );
+            setCompleted(
+                userBookings.filter((booking) => !!booking.completed_at || new Date(booking.date) < now)
+            );
         }
 
         filterBookings();

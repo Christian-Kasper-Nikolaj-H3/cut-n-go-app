@@ -28,6 +28,7 @@ export interface UserBookingReponse {
 export interface Booking {
     id: number;
     date: string;
+    completed_at?: string | null;
     employee: {
         id: number;
         user: {

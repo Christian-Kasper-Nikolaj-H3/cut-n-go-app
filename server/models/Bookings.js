@@ -37,6 +37,11 @@ const Bookings = sequelize.define("Bookings", {
             isDate: true,
             isAfter: { args: [new Date()], msg: "Booking date must be in the future" }
         }
+    },
+    completed_at: {
+        type: DataTypes.DATE(),
+        allowNull: true,
+        defaultValue: null
     }
 }, {
     tableName: 'bookings',
