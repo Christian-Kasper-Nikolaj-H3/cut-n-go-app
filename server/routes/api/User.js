@@ -11,6 +11,7 @@ import UserRoles from "../../models/UserRoles.js"
 import Bookings from "../../models/Bookings.js";
 import Salon from "../../models/Salon.js";
 import Employees from "../../models/Employees.js";
+import BookingInformation from "../../models/BookingInformation.js";
 
 const router = Router();
 
@@ -36,6 +37,12 @@ router.get('/bookings', authenticateToken, ...profileValidation, handleValidatio
         const bookings = await Bookings.findAll({
             include: [
                 {
+                    model: BookingInformation,
+                    as: 'information',
+                    attributes: ['first_name', 'last_name', 'phone', 'email'],
+                    where: { user_id: userId }
+                },
+                {
                     model: Employees,
                     as: 'employee',
                     attributes: ['id'],
@@ -59,7 +66,8 @@ router.get('/bookings', authenticateToken, ...profileValidation, handleValidatio
                     as: 'salon',
                     attributes: ['name', 'address', 'city', 'phone', 'email']
                 }
-            ]
+            ],
+            order: [['date', 'DESC']]
         });
 
         return res.status(200).json({

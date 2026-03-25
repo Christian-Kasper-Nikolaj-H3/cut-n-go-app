@@ -4,11 +4,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/context/AuthContext';
 import { useUser } from '@/context/UserContext';
+import { useEmployeePortal } from '@/context/EmployeePortalContext';
 
 export default function TabLayout() {
     const insets = useSafeAreaInsets();
     const {loggedIn} = useAuth();
     const { user } = useUser();
+    const { employee } = useEmployeePortal();
 
     useEffect(() => {
         if(!loggedIn) {
@@ -105,7 +107,7 @@ export default function TabLayout() {
                 name="employee"
                 options={{
                     title: 'Medarbejder',
-                    href: user && !user.is_admin ? '/(private)/employee' : null,
+                    href: employee ? '/(private)/employee' : null,
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons
                             name={focused ? 'briefcase' : 'briefcase-outline'}

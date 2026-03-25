@@ -43,7 +43,7 @@ export function UserProvider({children} : PropsWithChildren) {
 
     async function fetchUserBookings() {
         if(!loggedIn) {
-            setUser(null);
+            setBookings([]);
             return;
         }
 
@@ -53,7 +53,7 @@ export function UserProvider({children} : PropsWithChildren) {
             const response = await getUserBookings();
             setBookings(response.data.bookings ?? []);
         } catch {
-            setUser(null);
+            setBookings([]);
         } finally {
             setBookingsLoading(false);
         }

@@ -9,6 +9,8 @@ import Users from "../../models/Users.js";
 import UserInformation from "../../models/UserInformation.js";
 import Salon from "../../models/Salon.js";
 import EmployeeRoles from "../../models/EmployeeRoles.js";
+import Bookings from "../../models/Bookings.js";
+import BookingInformation from "../../models/BookingInformation.js";
 
 const router = Router();
 
@@ -59,6 +61,15 @@ const updateEmployeeValidation = [
     })
 ];
 
+const employeeProfileValidation = [
+    body().custom((_, { req }) => {
+        if (!req.user?.userId || !Number.isInteger(req.user.userId)) {
+            throw new Error('Invalid token payload');
+        }
+        return true;
+    })
+];
+
 // employee/all
 // employee/all/:salonId
 // employee/new
@@ -74,6 +85,81 @@ router.get('/roles', authenticateToken, handleValidationErrors, async (req, res)
             message: "Employee roles retrieved successfully",
             data:{
                 roles: employeeRoles
+            }
+        });
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+});
+
+router.get('/me', authenticateToken, ...employeeProfileValidation, handleValidationErrors, async (req, res) => {
+    try {
+        const { userId } = req.user;
+
+        const employee = await Employee.findOne({
+            where: { user_id: userId },
+            include: [
+                {
+                    model: Users,
+                    as: 'user',
+                    attributes: ['id', 'username'],
+                    include: [
+                        {
+                            model: UserInformation,
+                            as: 'information',
+                            attributes: ['first_name', 'last_name', 'phone', 'email']
+                        }
+                    ]
+                },
+                {
+                    model: Salon,
+                    as: 'salon',
+                    attributes: ['id', 'name', 'address', 'city', 'phone', 'email']
+                },
+                {
+                    model: EmployeeRoles,
+                    as: 'role',
+                    attributes: ['id', 'name']
+                }
+            ]
+        });
+
+        if (!employee) {
+            return res.status(404).json({
+                success: false,
+                message: "Employee profile not found"
+            });
+        }
+
+        const bookings = await Bookings.findAll({
+            where: { employee_id: employee.id },
+            attributes: ['id', 'date'],
+            include: [
+                {
+                    model: Salon,
+                    as: 'salon',
+                    attributes: ['id', 'name', 'address', 'city', 'phone', 'email']
+                },
+                {
+                    model: BookingInformation,
+                    as: 'information',
+                    attributes: ['first_name', 'last_name', 'phone', 'email']
+                }
+            ],
+            order: [['date', 'DESC']]
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Employee profile retrieved successfully",
+            data: {
+                employee,
+                bookings
             }
         });
     } catch (err) {
