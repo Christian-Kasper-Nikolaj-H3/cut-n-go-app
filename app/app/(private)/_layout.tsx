@@ -102,6 +102,21 @@ export default function TabLayout() {
             />
 
             <Tabs.Screen
+                name="employee"
+                options={{
+                    title: 'Medarbejder',
+                    href: user && !user.is_admin ? '/(private)/employee' : null,
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'briefcase' : 'briefcase-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
+
+            <Tabs.Screen
                 name="logout"
                 options={{
                     title: 'Logout',

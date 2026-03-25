@@ -7,6 +7,7 @@ import { UserProvider } from '@/context/UserContext';
 import { EmployeeProvider } from '@/context/EmployeeContext';
 import { SalonProvider } from '@/context/SalonContext';
 import { TreatmentProvider } from '@/context/TreatmentContext';
+import { EmployeePortalProvider } from '@/context/EmployeePortalContext';
 
 const appTheme = {
     ...MD3LightTheme,
@@ -55,7 +56,9 @@ export default function RootLayout() {
                         <EmployeeProvider>
                             <SalonProvider>
                                 <TreatmentProvider>
-                                    <RootNavigator />
+                                    <EmployeePortalProvider>
+                                        <RootNavigator />
+                                    </EmployeePortalProvider>
                                 </TreatmentProvider>
                             </SalonProvider>
                         </EmployeeProvider>
