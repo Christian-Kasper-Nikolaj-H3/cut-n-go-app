@@ -42,7 +42,7 @@ export default function DashboardScreen() {
                 <Card style={styles.heroCard}>
                     <Card.Content style={styles.heroContent}>
                         <Text variant="headlineMedium" style={styles.title}>
-                            Dashboard
+                            Mine tider
                         </Text>
                         <Text variant="bodyMedium" style={styles.subtitle}>
                             Hej {user?.first_name || user?.username || 'igen'} — her er dine kommende og

@@ -32,15 +32,6 @@ export default function AdminIndexScreen() {
             style={styles.container}
         >
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                <Card style={styles.card}>
-                    <Card.Title title="Admin oversigt"/>
-                    <Card.Content>
-                        <Text variant="bodyMedium" style={styles.subtitle}>
-                            Hurtigt overblik over data i systemet.
-                        </Text>
-                    </Card.Content>
-                </Card>
-
                 <View style={styles.statsGrid}>
                     {stats.map((item) => (
                         <Card key={item.label} style={styles.statCard}>
@@ -94,12 +85,13 @@ const styles = StyleSheet.create({
     statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 10,
+        justifyContent: 'space-between',
     },
     statCard: {
-        width: '48%',
+        width: '48.5%',
         backgroundColor: '#ffffff',
         borderRadius: 16,
+        marginBottom: 10,
     },
     statLabel: {
         color: '#9d174d',
