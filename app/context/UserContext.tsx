@@ -1,13 +1,15 @@
 import {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
 import { useAuth } from "./AuthContext";
 import { getCurrentUser, getUserBookings, type User, type Booking } from "@/api/User";
+import { newBooking, type NewBookingPayload } from "@/api/Booking";
 
 type UserContextValue = {
     user: User | null;
     userLoading: boolean;
     bookings: Booking[] | null;
     bookingsLoading: boolean;
-}
+    addBooking: (payload: NewBookingPayload) => Promise<void>;
+};
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
 
@@ -59,8 +61,13 @@ export function UserProvider({children} : PropsWithChildren) {
         }
     }
 
+    async function addBooking(payload: NewBookingPayload) {
+        await newBooking(payload);
+        await fetchUserBookings();
+    }
+
     return (
-        <UserContext.Provider value={{ user, userLoading, bookings, bookingsLoading }}>
+        <UserContext.Provider value={{ user, userLoading, bookings, bookingsLoading, addBooking }}>
             {children}
         </UserContext.Provider>
     );

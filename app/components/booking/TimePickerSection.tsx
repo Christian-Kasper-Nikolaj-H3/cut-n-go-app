@@ -26,6 +26,13 @@ function isTimeInFuture(selectedDate: Date, time: string) {
 
     return slotDate.getTime() > Date.now();
 }
+function formatLocalDateNoTime(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
 
 export function TimePickerSection({
     selectedSalon,
@@ -54,7 +61,7 @@ export function TimePickerSection({
                 const response = await getAvailableTimes({
                     salon_id: selectedSalon,
                     employee_id: selectedEmployee,
-                    date: selectedDate.toISOString().slice(0, 10),
+                    date: formatLocalDateNoTime(selectedDate)
                 });
 
                 // @ts-ignore

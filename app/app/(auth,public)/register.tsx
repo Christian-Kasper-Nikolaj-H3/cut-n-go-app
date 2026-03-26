@@ -1,5 +1,5 @@
 import {KeyboardAvoidingView, Platform, StyleSheet, View} from 'react-native';
-import {Text, TextInput, Button, HelperText, Divider} from 'react-native-paper';
+import {Text, TextInput, Button, Divider} from 'react-native-paper';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useState} from 'react';
 import {router} from 'expo-router';
