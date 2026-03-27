@@ -80,6 +80,21 @@ export default function PublicLayout() {
                     ),
                 }}
             />
+
+            <Tabs.Screen
+                name="register"
+                options={{
+                    title: 'Register',
+                    href: null,
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons
+                            name={focused ? 'log-in' : 'log-in-outline'}
+                            color={color}
+                            size={24}
+                        />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }
