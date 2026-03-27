@@ -1,7 +1,8 @@
-import {useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Card, Chip, Text} from 'react-native-paper';
 import {LinearGradient} from 'expo-linear-gradient';
+import * as Location from 'expo-location';
 import {useSalon} from '@/context/SalonContext';
 import {type Salon} from '@/api/Salon';
 
@@ -11,11 +12,94 @@ type SalonPickerProps = {
 
 export function SalonPicker({onSelectSalon}: SalonPickerProps) {
     const {salons} = useSalon();
+    const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
+    const [userPostalCode, setUserPostalCode] = useState<string | null>(null);
+    const [sortedSalons, setSortedSalons] = useState<Salon[]>(salons);
 
     const salonCountLabel = useMemo(() => {
         const count = salons.length;
         return `${count} salon${count === 1 ? '' : 'er'}`;
     }, [salons.length]);
+
+    useEffect(() => {
+        async function requestLocationAndSet() {
+            const {status} = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setUserLocation(null);
+                return;
+            }
+
+            const position = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+            });
+
+            setUserLocation({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+            });
+
+            try {
+                const reverse = await Location.reverseGeocodeAsync({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                });
+                const postalCode = reverse[0]?.postalCode?.trim();
+                setUserPostalCode(postalCode || null);
+            } catch {
+                setUserPostalCode(null);
+            }
+        }
+
+        void requestLocationAndSet();
+    }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function sortSalonsByDistance() {
+            if (!userLocation) {
+                setSortedSalons(salons);
+                return;
+            }
+
+            const salonsWithDistance = await Promise.all(
+                salons.map(async (salon, index) => {
+                    const searchText = `${salon.address}, ${salon.city}`.trim();
+                    const postalMatchRank =
+                        userPostalCode && containsPostalCode(searchText, userPostalCode) ? 0 : 1;
+
+                    try {
+                        const distance = await findBestDistanceForSalon(
+                            salon,
+                            userLocation.latitude,
+                            userLocation.longitude
+                        );
+                        return {salon, postalMatchRank, distance, index};
+                    } catch {
+                        return {salon, postalMatchRank, distance: Number.POSITIVE_INFINITY, index};
+                    }
+                })
+            );
+
+            salonsWithDistance.sort((a, b) => {
+                if (a.postalMatchRank !== b.postalMatchRank) {
+                    return a.postalMatchRank - b.postalMatchRank;
+                }
+                if (a.distance === b.distance) return a.index - b.index;
+                return a.distance - b.distance;
+            });
+
+            if (isMounted) {
+                setSortedSalons(salonsWithDistance.map((item) => item.salon));
+            }
+        }
+
+        void sortSalonsByDistance();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [salons, userLocation, userPostalCode]);
 
     return (
         <LinearGradient
@@ -45,7 +129,7 @@ export function SalonPicker({onSelectSalon}: SalonPickerProps) {
                     </Card>
                 ) : (
                     <View style={styles.list}>
-                        {salons.map((salon) => {
+                        {sortedSalons.map((salon) => {
                             const location = `${salon.address}, ${salon.city}`;
 
                             return (
@@ -79,6 +163,58 @@ export function SalonPicker({onSelectSalon}: SalonPickerProps) {
             </ScrollView>
         </LinearGradient>
     );
+}
+
+function calculateDistanceInKm(
+    fromLat: number,
+    fromLon: number,
+    toLat: number,
+    toLon: number
+): number {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+
+    const dLat = toRad(toLat - fromLat);
+    const dLon = toRad(toLon - fromLon);
+    const lat1 = toRad(fromLat);
+    const lat2 = toRad(toLat);
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return earthRadiusKm * c;
+}
+
+async function findBestDistanceForSalon(
+    salon: Salon,
+    userLat: number,
+    userLon: number
+): Promise<number> {
+    const queries = [
+        `${salon.address}, ${salon.city}, Danmark`,
+        `${salon.address}, Danmark`,
+        `${salon.city}, Danmark`,
+    ];
+
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (const query of queries) {
+        const results = await Location.geocodeAsync(query);
+        for (const result of results) {
+            const distance = calculateDistanceInKm(userLat, userLon, result.latitude, result.longitude);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+            }
+        }
+    }
+
+    return bestDistance;
+}
+
+function containsPostalCode(text: string, postalCode: string): boolean {
+    return text.toLowerCase().includes(postalCode.toLowerCase());
 }
 
 const styles = StyleSheet.create({

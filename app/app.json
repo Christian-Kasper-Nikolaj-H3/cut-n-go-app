@@ -39,6 +39,12 @@
           }
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Vi bruger din lokation til at vise nærmeste salon først."
+        }
+      ],
       "expo-secure-store",
       "@react-native-community/datetimepicker"
     ],
