@@ -107,6 +107,7 @@ export default function LoginScreen() {
                                         onPress={() => setShowPassword(!showPassword)}
                                     />
                                 }
+                                autoCapitalize="none"
                             />
 
                             <Button

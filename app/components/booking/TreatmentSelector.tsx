@@ -1,14 +1,9 @@
-import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Chip, Divider, Text, TouchableRipple } from 'react-native-paper';
+import {useMemo} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {Chip, Divider, Text, TouchableRipple} from 'react-native-paper';
+import {useTreatment} from '@/context/TreatmentContext';
 
-export type MainTreatment =
-    | 'klipning'
-    | 'permanent'
-    | 'striber'
-    | 'helfarvning'
-    | 'toning'
-    | 'kombinationer';
+export type MainTreatment = string;
 
 export type SelectedOption = {
     title: string;
@@ -17,7 +12,7 @@ export type SelectedOption = {
 };
 
 type TreatmentCard = {
-    id: MainTreatment;
+    id: string;
     title: string;
     subtitle: string;
     hint: string;
@@ -30,114 +25,55 @@ type TreatmentSelectorProps = {
     onSelectDetail: (option: SelectedOption) => void;
 };
 
-const treatmentCards: TreatmentCard[] = [
-    {
-        id: 'klipning',
-        title: 'Klipning',
-        subtitle: 'Herre, dame, barn og pensionist',
-        hint: 'Vælg den type klipning kunden ønsker',
-    },
-    {
-        id: 'permanent',
-        title: 'Permanent',
-        subtitle: 'Kort, mellem eller langt hår',
-        hint: 'Pris afhænger af hårlængde',
-    },
-    {
-        id: 'striber',
-        title: 'Striber',
-        subtitle: 'Kort, mellem, langt eller hætte striber',
-        hint: 'Vælg metode og hårlænge',
-    },
-    {
-        id: 'helfarvning',
-        title: 'Helfarvning',
-        subtitle: 'Kort, mellem eller langt hår',
-        hint: 'Vælg hårlængde for pris',
-    },
-    {
-        id: 'toning',
-        title: 'Toning',
-        subtitle: 'Bund 2-3 cm',
-        hint: 'En enkel toning-behandling',
-    },
-    {
-        id: 'kombinationer',
-        title: 'Kombinationer',
-        subtitle: 'Predefinerede combo-behandlinger',
-        hint: 'Vælg en godkendt kombination',
-    },
-];
-
-const klipningOptions: SelectedOption[] = [
-    { title: 'Herre', detail: 'Voksen herre', price: '180,-' },
-    { title: 'Dame', detail: 'Voksen dame', price: '250,-' },
-    { title: 'Barn', detail: 'Under 12 år', price: '170,-' },
-    { title: 'Herre (pensionist)', detail: 'Pensionist', price: '170,-' },
-    { title: 'Dame (pensionist)', detail: 'Pensionist', price: '230,-' },
-];
-
-const permanentOptions: SelectedOption[] = [
-    { title: 'Kort', detail: 'Permanent', price: 'Fra 550,-' },
-    { title: 'Mellem', detail: 'Permanent', price: 'Fra 750,-' },
-    { title: 'Langt', detail: 'Permanent', price: 'Fra 950,-' },
-];
-
-const striberOptions: SelectedOption[] = [
-    { title: 'Kort', detail: 'Striber', price: 'Fra 550,-' },
-    { title: 'Mellem', detail: 'Striber', price: 'Fra 750,-' },
-    { title: 'Langt', detail: 'Striber', price: 'Fra 850,-' },
-    { title: 'Hætte striber', detail: 'Striber', price: 'Fra 400,-' },
-];
-
-const helfarvningOptions: SelectedOption[] = [
-    { title: 'Kort', detail: 'Helfarvning', price: '350,-' },
-    { title: 'Mellem', detail: 'Helfarvning', price: '600,-' },
-    { title: 'Langt', detail: 'Helfarvning', price: '700 - 1000,-' },
-];
-
-const toningOptions: SelectedOption[] = [
-    { title: 'Bund 2-3 cm', detail: 'Toning', price: '350,-' },
-];
-
-const comboOptions: SelectedOption[] = [
-    { title: 'Klipning + Permanent', detail: 'Pakke', price: 'Fra 730,-' },
-    { title: 'Klipning + Striber', detail: 'Pakke', price: 'Fra 730,-' },
-    { title: 'Klipning + Helfarvning', detail: 'Pakke', price: 'Fra 530,-' },
-    { title: 'Klipning + Toning', detail: 'Pakke', price: 'Fra 530,-' },
-];
-
 export function TreatmentSelector({
                                       selectedMainTreatment,
                                       selectedDetail,
                                       onSelectMainTreatment,
                                       onSelectDetail,
                                   }: TreatmentSelectorProps) {
+    const {categories, treatments} = useTreatment();
+
+    const treatmentCards = useMemo<TreatmentCard[]>(() => {
+        return categories.map((category) => {
+            const categoryTreatments = treatments.filter(
+                (treatment) => treatment.category_id === category.id
+            );
+
+            return {
+                id: category.title.toLowerCase(),
+                title: category.title,
+                subtitle: category.description ?? `${categoryTreatments.length} behandlinger`,
+                hint: categoryTreatments.length > 0
+                    ? 'Vælg en behandling i denne kategori'
+                    : 'Ingen behandlinger tilgængelige endnu',
+            };
+        });
+    }, [categories, treatments]);
+
     const detailOptions = useMemo(() => {
-        switch (selectedMainTreatment) {
-            case 'klipning':
-                return klipningOptions;
-            case 'permanent':
-                return permanentOptions;
-            case 'striber':
-                return striberOptions;
-            case 'helfarvning':
-                return helfarvningOptions;
-            case 'toning':
-                return toningOptions;
-            case 'kombinationer':
-                return comboOptions;
-            default:
-                return [];
+        const selectedCategory = categories.find(
+            (category) => category.title.toLowerCase() === selectedMainTreatment.toLowerCase()
+        );
+
+        if (!selectedCategory) {
+            return [];
         }
-    }, [selectedMainTreatment]);
+
+        return treatments
+            .filter((treatment) => treatment.category_id === selectedCategory.id)
+            .map((treatment) => ({
+                title: treatment.name,
+                detail: selectedCategory.description ?? '',
+                price: treatment.price,
+            }));
+    }, [selectedMainTreatment, treatments, categories]);
 
     return (
         <View style={styles.section}>
             <Text style={styles.sectionTitle}>Vælg behandling *</Text>
 
             {treatmentCards.map((card) => {
-                const isSelected = selectedMainTreatment === card.id;
+                const isSelected = selectedMainTreatment.toLowerCase() === card.id;
 
                 return (
                     <TouchableRipple
@@ -195,9 +131,7 @@ export function TreatmentSelector({
                                                 Valgt Behandling
                                             </Text>
                                             <Text variant="bodyMedium" style={styles.summaryText}>
-                                                {selectedMainTreatment === 'kombinationer'
-                                                    ? selectedDetail.title
-                                                    : `${card.title} + ${selectedDetail.title}`}
+                                                {selectedDetail.title}
                                             </Text>
                                             <Text variant="bodyMedium" style={styles.summaryPrice}>
                                                 {selectedDetail.price}

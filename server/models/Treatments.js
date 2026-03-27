@@ -21,7 +21,7 @@ const Treatments = sequelize.define("Treatments", {
     name: {
         type: DataTypes.STRING(),
         allowNull: false,
-        unique: true,
+        unique: false,
         validate: {
             notEmpty: { msg: "Treatment name is required" }
         }

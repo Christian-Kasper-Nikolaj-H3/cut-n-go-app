@@ -148,6 +148,7 @@ export default function RegisterScreen() {
                                         onPress={() => setShowPassword(!showPassword)}
                                     />
                                 }
+                                autoCapitalize="none"
                                 style={styles.flex}
                             />
                             <TextInput

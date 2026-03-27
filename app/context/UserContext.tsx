@@ -55,6 +55,7 @@ export function UserProvider({children} : PropsWithChildren) {
             const response = await getUserBookings();
             setBookings(response.data.bookings ?? []);
         } catch {
+            console.log("fejl")
             setBookings([]);
         } finally {
             setBookingsLoading(false);
@@ -62,8 +63,10 @@ export function UserProvider({children} : PropsWithChildren) {
     }
 
     async function addBooking(payload: NewBookingPayload) {
-        await newBooking(payload);
+        const res = await newBooking(payload);
         await fetchUserBookings();
+
+
     }
 
     return (
