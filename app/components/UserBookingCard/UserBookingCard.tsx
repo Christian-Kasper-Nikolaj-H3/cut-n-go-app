@@ -1,5 +1,5 @@
-import { View, StyleSheet } from 'react-native';
-import { Card, Chip, Divider, Text } from 'react-native-paper';
+import { Linking, StyleSheet, View } from 'react-native';
+import { Button, Card, Chip, Divider, Text } from 'react-native-paper';
 import { type Booking } from '@/api/User';
 
 export function UserBookingCard({
@@ -11,6 +11,12 @@ export function UserBookingCard({
 }) {
 
     const formatBookingDate = (value: string) => new Date(value).toLocaleString('da-DK', { dateStyle: 'short', timeStyle: 'short'});
+    const destination = `${booking.salon.address}, ${booking.salon.city}`.trim();
+    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+
+    async function handleOpenDirections() {
+        await Linking.openURL(directionsUrl);
+    }
 
     return (
         <Card style={styles.bookingCard}>
@@ -53,6 +59,32 @@ export function UserBookingCard({
                         {formatBookingDate(booking.date)}
                     </Text>
                 </View>
+
+                <View style={styles.infoRow}>
+                    <Text variant="labelMedium" style={styles.infoLabel}>
+                        Adresse
+                    </Text>
+                    <Text variant="bodyMedium" style={styles.infoValue}>
+                        {destination}
+                    </Text>
+                </View>
+
+                <View style={styles.routeBox}>
+                    <Text variant="bodySmall" style={styles.routeHelpText}>
+                        Tryk for rutevejledning til salonen.
+                    </Text>
+                    <Button
+                        mode="contained"
+                        compact
+                        icon="map-marker-path"
+                        onPress={handleOpenDirections}
+                        contentStyle={styles.routeButtonContent}
+                        labelStyle={styles.routeButtonLabel}
+                        style={styles.routeButton}
+                    >
+                        Åbn rute i kort
+                    </Button>
+                </View>
             </Card.Content>
         </Card>
     );
@@ -61,7 +93,9 @@ export function UserBookingCard({
 const styles = StyleSheet.create({
     bookingCard: {
         backgroundColor: '#ffffff',
-        borderRadius: 18,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#fce7f3',
         shadowColor: '#000000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.06,
@@ -69,8 +103,8 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     bookingCardContent: {
-        padding: 18,
-        gap: 10,
+        padding: 16,
+        gap: 12,
     },
     bookingCardHeader: {
         flexDirection: 'row',
@@ -87,14 +121,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#fce7f3',
     },
     infoRow: {
-        gap: 4,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: 12,
     },
     infoLabel: {
         color: '#9d174d',
         fontWeight: '700',
+        minWidth: 68,
     },
     infoValue: {
-        color: '#52525b',
+        color: '#3f3f46',
+        flex: 1,
+        textAlign: 'right',
     },
     statusChip: {
         borderWidth: 1,
@@ -110,5 +150,26 @@ const styles = StyleSheet.create({
     statusChipText: {
         fontWeight: '700',
         color: '#374151',
+    },
+    routeBox: {
+        marginTop: 2,
+        padding: 10,
+        borderRadius: 12,
+        backgroundColor: '#fff7fb',
+    },
+    routeHelpText: {
+        color: '#71717a',
+        marginBottom: 6,
+    },
+    routeButtonContent: {
+        justifyContent: 'center',
+    },
+    routeButton: {
+        alignSelf: 'flex-start',
+        backgroundColor: '#be185d',
+    },
+    routeButtonLabel: {
+        color: '#ffffff',
+        fontWeight: '700',
     },
 });
