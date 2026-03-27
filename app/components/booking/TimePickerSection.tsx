@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, Chip, HelperText, Text} from 'react-native-paper';
 import {StyleSheet, View} from 'react-native';
 import {getAvailableTimes} from "@/api/Booking";
@@ -11,6 +11,28 @@ type TimePickerSectionProps = {
     onSelectTime: (time: string) => void;
     onChange?: () => void;
 };
+
+const ALL_TIME_SLOTS = [
+    '09:00', '09:30', '10:00', '10:30',
+    '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30',
+];
+
+function isTimeInFuture(selectedDate: Date, time: string) {
+    const [hours, minutes] = time.split(':').map(Number);
+    const slotDate = new Date(selectedDate);
+    slotDate.setHours(hours, minutes, 0, 0);
+
+    return slotDate.getTime() > Date.now();
+}
+function formatLocalDateNoTime(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
 
 export function TimePickerSection({
     selectedSalon,
@@ -27,6 +49,7 @@ export function TimePickerSection({
     useEffect(() => {
         if (!selectedSalon || !selectedEmployee || !selectedDate) {
             setAvailableTimes([]);
+            setError(null);
             return;
         }
 
@@ -38,7 +61,7 @@ export function TimePickerSection({
                 const response = await getAvailableTimes({
                     salon_id: selectedSalon,
                     employee_id: selectedEmployee,
-                    date: selectedDate.toLocaleDateString('da-DK'),
+                    date: formatLocalDateNoTime(selectedDate)
                 });
 
                 // @ts-ignore
@@ -53,6 +76,18 @@ export function TimePickerSection({
 
         void loadAvailableTimes();
     }, [selectedSalon, selectedEmployee, selectedDate]);
+
+    const slotState = useMemo(() => {
+        return ALL_TIME_SLOTS.map((time) => {
+            const isAvailableFromApi = availableTimes.includes(time);
+            const isNotInPast = selectedDate ? isTimeInFuture(selectedDate, time) : false;
+
+            return {
+                time,
+                enabled: isAvailableFromApi && isNotInPast,
+            };
+        });
+    }, [availableTimes, selectedDate]);
 
     return (
         <View style={styles.section}>
@@ -81,26 +116,30 @@ export function TimePickerSection({
                 </HelperText>
             ) : (
                 <View style={styles.timeGrid}>
-                    {availableTimes.map((timeValue) => (
+                    {slotState.map((slot) => (
                         <Chip
-                            key={timeValue}
-                            selected={selectedTime === timeValue}
+                            key={slot.time}
+                            selected={selectedTime === slot.time}
+                            disabled={!slot.enabled}
                             onPress={() => {
-                                onSelectTime(timeValue);
+                                if (!slot.enabled) return;
+                                onSelectTime(slot.time);
                                 onChange?.();
                             }}
                             mode="outlined"
                             style={[
                                 styles.timeChip,
-                                selectedTime === timeValue && styles.timeChipSelected,
+                                !slot.enabled && styles.timeChipDisabled,
+                                selectedTime === slot.time && styles.timeChipSelected,
                             ]}
                             textStyle={[
                                 styles.timeChipText,
-                                selectedTime === timeValue && styles.timeChipTextSelected,
+                                !slot.enabled && styles.timeChipTextDisabled,
+                                selectedTime === slot.time && styles.timeChipTextSelected,
                             ]}
                             selectedColor="#ffffff"
                         >
-                            {timeValue}
+                            {slot.time}
                         </Chip>
                     ))}
                 </View>
@@ -140,6 +179,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#fffafc',
         borderColor: '#f5c2d7',
     },
+    timeChipDisabled: {
+        backgroundColor: '#f4f4f5',
+        borderColor: '#e4e4e7',
+        opacity: 0.55,
+    },
     timeChipSelected: {
         backgroundColor: '#ec4899',
         borderColor: '#ec4899',
@@ -147,6 +191,9 @@ const styles = StyleSheet.create({
     timeChipText: {
         color: '#9d174d',
         fontWeight: '600',
+    },
+    timeChipTextDisabled: {
+        color: '#a1a1aa',
     },
     timeChipTextSelected: {
         color: '#ffffff',

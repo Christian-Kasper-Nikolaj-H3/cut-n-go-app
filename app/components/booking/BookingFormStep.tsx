@@ -3,7 +3,6 @@ import {KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View} from 'reac
 import {Button, Card, Text} from 'react-native-paper';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useUser} from '@/context/UserContext';
-import {newBooking} from '@/api/Booking';
 import {AppSnackbar} from '@/components/common/AppSnackbar';
 import {ContactDetailsForm} from '@/components/booking/ContactDetailsForm';
 import {DatePickerSection} from '@/components/booking/DatePickerSection';
@@ -24,7 +23,7 @@ type BookingFormStepProps = {
 };
 
 export function BookingFormStep({salon, employee, onBack}: BookingFormStepProps) {
-    const {user} = useUser();
+    const {user, addBooking} = useUser();
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -105,7 +104,7 @@ export function BookingFormStep({salon, employee, onBack}: BookingFormStepProps)
         try {
             setIsSubmitting(true);
 
-            const payload = {
+            await addBooking({
                 salon_id: String(salon?.id),
                 employee_id: String(employee?.id),
                 date: `${formattedApiDate}T${selectedTime}:00`,
@@ -113,13 +112,7 @@ export function BookingFormStep({salon, employee, onBack}: BookingFormStepProps)
                 last_name: lastName.trim(),
                 phone: phone.trim(),
                 email: email.trim(),
-            };
-
-            const response = await newBooking(payload);
-
-            if (!response.success) {
-                throw new Error('Booking kunne ikke oprettes.');
-            }
+            })
 
             setMessage({
                 type: 'success',
