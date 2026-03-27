@@ -37,7 +37,7 @@ const salonIdValidation = [
         .toInt()
 ];
 
-router.get('/all', authenticateToken, handleValidationErrors, async (req, res) => {
+router.get('/all', handleValidationErrors, async (req, res) => {
     try {
         const salons = await Salon.findAll({});
 

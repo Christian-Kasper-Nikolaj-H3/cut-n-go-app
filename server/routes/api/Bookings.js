@@ -66,10 +66,10 @@ const availableTimesValidation = [
         .isISO8601().withMessage('date must be a valid ISO 8601 date')
 ];
 
-router.post('/new', authenticateToken, ...newBookingValidation, handleValidationErrors, async (req, res) => {
+router.post('/new', ...newBookingValidation, handleValidationErrors, async (req, res) => {
     try {
         const { salon_id, employee_id, date, first_name, last_name, phone, email, treatment_ids } = req.body;
-        const { userId } = req.user;
+
 
         const booking = await Bookings.create({
             salon_id: salon_id,
@@ -79,7 +79,7 @@ router.post('/new', authenticateToken, ...newBookingValidation, handleValidation
 
         const bookingDetails = await BookingInformation.create({
             booking_id: booking.id,
-            user_id: userId,
+            user_id: req?.user?.userId ?? null,
             first_name: first_name,
             last_name: last_name,
             phone: phone,

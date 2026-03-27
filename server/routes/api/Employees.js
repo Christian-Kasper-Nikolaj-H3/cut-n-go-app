@@ -264,7 +264,7 @@ router.get('/me', authenticateToken, ...employeeProfileValidation, handleValidat
     }
 });
 
-router.get('/all', authenticateToken, handleValidationErrors, async (req, res) => {
+router.get('/all', handleValidationErrors, async (req, res) => {
     try {
         const employees = await Employee.findAll({
             include: [
@@ -310,7 +310,7 @@ router.get('/all', authenticateToken, handleValidationErrors, async (req, res) =
     }
 });
 
-router.get('/all/:salonId', authenticateToken, ...salonIdParamValidation, handleValidationErrors, async (req, res) => {
+router.get('/all/:salonId', ...salonIdParamValidation, handleValidationErrors, async (req, res) => {
     try {
         const { salonId } = req.params;
         const employees = await Employee.findAll({

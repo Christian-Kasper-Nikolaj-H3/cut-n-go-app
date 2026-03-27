@@ -23,13 +23,9 @@ export function SalonProvider({children} : PropsWithChildren) {
 
     useEffect(() => {
         void fetchSalons();
-    }, [loggedIn]);
+    }, []);
 
     async function fetchSalons() {
-        if(!loggedIn) {
-            setSalons([]);
-            return;
-        }
 
         try {
             const response = await apiGetAllSalons();

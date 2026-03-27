@@ -31,13 +31,9 @@ export function EmployeeProvider({children} : PropsWithChildren) {
     useEffect(() => {
         void fetchEmployees();
         void fetchRoles();
-    }, [loggedIn]);
+    }, []);
 
     async function fetchEmployees() {
-        if(!loggedIn) {
-            setEmployees([]);
-            return;
-        }
 
         try {
             const response = await apiGetAllEmployees();
@@ -48,10 +44,6 @@ export function EmployeeProvider({children} : PropsWithChildren) {
     }
 
     async function fetchRoles() {
-        if (!loggedIn) {
-            setRoles([]);
-            return;
-        }
 
         try {
             const response = await apiGetEmployeeRoles();
