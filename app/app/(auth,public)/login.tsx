@@ -100,6 +100,7 @@ export default function LoginScreen() {
                                 onChangeText={setPassword}
                                 mode="outlined"
                                 secureTextEntry={!showPassword}
+                                autoCapitalize="none"
                                 right={
                                     <TextInput.Icon
                                         icon={showPassword ? 'eye-off' : 'eye'}

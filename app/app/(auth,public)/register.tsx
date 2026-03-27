@@ -101,7 +101,7 @@ export default function RegisterScreen() {
                                 value={username}
                                 onChangeText={setUsername}
                                 mode="outlined"
-                                autoCapitalize="sentences"
+                                autoCapitalize="none"
                                 style={styles.flex}
                             />
                             <TextInput
@@ -141,6 +141,7 @@ export default function RegisterScreen() {
                                 onChangeText={setPassword}
                                 mode="outlined"
                                 secureTextEntry={!showPassword}
+                                autoCapitalize={"none"}
                                 right={
                                     <TextInput.Icon
                                         icon={showPassword ? 'eye-off' : 'eye'}
